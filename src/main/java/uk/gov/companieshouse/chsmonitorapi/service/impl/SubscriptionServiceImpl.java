@@ -31,6 +31,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
 
         subscriptions.forEach(subscription -> {
+            //TODO: why? to account for name updates since subscription entry was added?
             try {
                 subscription.setCompanyName(
                         companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
@@ -59,7 +60,22 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Subscription getSubscription(String companyNumber) throws ServiceException {
-        return null;
+        // TODO: actually get this
+        Subscription subscription = new Subscription();
+        if (subscription == null) {
+            throw new RuntimeException();
+        }
+
+        // TODO: why? to account for name updates since subscription entry was added?
+        try {
+            subscription.setCompanyName(
+                    companyProfileService.getCompanyDetails(subscription.getCompanyName())
+                            .getCompanyName());
+            return subscription;
+        } catch (ServiceException ex) {
+            // TODO: figure this out
+            throw new RuntimeException(ex);
+        }
     }
 
     @Override
