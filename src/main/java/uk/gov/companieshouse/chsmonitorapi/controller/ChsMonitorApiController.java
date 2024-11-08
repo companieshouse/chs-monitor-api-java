@@ -8,8 +8,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
@@ -30,7 +32,7 @@ public class ChsMonitorApiController {
         this.subscriptionService = subscriptionService;
     }
 
-    @GetMapping("/{companyNumber}")
+    @GetMapping
     public ResponseEntity<List<Subscription>> getSubscriptions(HttpServletRequest request,
             @PathVariable @NonNull String companyNumber, @PathVariable @NonNull int startIndex,
             @PathVariable @NonNull int itemsPerPage) {
@@ -38,11 +40,44 @@ public class ChsMonitorApiController {
             List<Subscription> subscriptions = subscriptionService.getSubscriptions(companyNumber,
                     startIndex, itemsPerPage);
             return ResponseEntity.ok(subscriptions);
-        } catch (ArrayIndexOutOfBoundsException ex) {
+        } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
-        } catch (ServiceException e) {
+        } catch (ServiceException exception) {
             // TODO: handle service exception
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/{companyNumber}")
+    public ResponseEntity<Subscription> getSubscription(HttpServletRequest request,
+            @PathVariable @NonNull String companyNumber) {
+        try {
+            Subscription subscription = subscriptionService.getSubscription(companyNumber);
+            return ResponseEntity.ok(subscription);
+        } catch (ServiceException exception) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @PostMapping("/{companyNumber}")
+    public ResponseEntity<HttpStatus> createSubscription(HttpServletRequest request,
+            @PathVariable @NonNull String companyNumber) {
+        try {
+            subscriptionService.createSubscription(companyNumber);
+            return ResponseEntity.ok().build();
+        } catch (ServiceException exception) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @DeleteMapping("/{companyNumber}")
+    public ResponseEntity<HttpStatus> deleteSubscription(HttpServletRequest request,
+            @PathVariable @NonNull String companyNumber) {
+        try {
+            subscriptionService.deleteSubscription(companyNumber);
+            return ResponseEntity.ok().build();
+        } catch (ServiceException exception) {
+            return ResponseEntity.internalServerError().build();
         }
     }
 }

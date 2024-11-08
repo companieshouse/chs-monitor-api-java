@@ -9,4 +9,10 @@ public interface SubscriptionService {
     List<Subscription> getSubscriptions(String companyNumber, int startIndex, int itemsPerPage)
             throws ServiceException;
 
+    Subscription getSubscription(String companyNumber) throws ServiceException;
+
+    void createSubscription(String companyNumber) throws ServiceException;
+
+    void deleteSubscription(String companyNumber) throws ServiceException;
+
 }

@@ -56,4 +56,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         return subscriptions.subList(startIndex, lastItem);
     }
+
+    @Override
+    public Subscription getSubscription(String companyNumber) throws ServiceException {
+        return null;
+    }
+
+    @Override
+    public void createSubscription(String companyNumber) throws ServiceException {
+
+    }
+
+    @Override
+    public void deleteSubscription(String companyNumber) throws ServiceException {
+
+    }
 }
