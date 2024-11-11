@@ -16,12 +16,14 @@ import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -33,11 +35,6 @@ import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 class ChsMonitorApiControllerTest {
 
     private final String TEST_COMPANY_NUMBER = "1777777";
-    @Autowired
-    private MockMvc mockMvc;
-    @MockBean
-    private SubscriptionService subscriptionService;
-
     private final String TEST_ID = "TEST_ID";
     private final String COMPANY_NAME = "12345678";
     private final String COMPANY_NUMBER = "TEST_COMPANY";
@@ -45,8 +42,13 @@ class ChsMonitorApiControllerTest {
     private final LocalDateTime NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     private final List<Subscription> SUBSCRIPTIONS = new ArrayList<>();
     private final Subscription SUBSCRIPTION = new Subscription();
-    private final LocalDateTime CREATED = NOW.minus(Period.ofDays(1)).truncatedTo(ChronoUnit.SECONDS);
+    private final LocalDateTime CREATED = NOW.minus(Period.ofDays(1))
+            .truncatedTo(ChronoUnit.SECONDS);
     private final boolean ACTIVE = true;
+    @Autowired
+    private MockMvc mockMvc;
+    @MockBean
+    private SubscriptionService subscriptionService;
     private String EXPECTED_RESPONSE;
 
 
@@ -56,6 +58,7 @@ class ChsMonitorApiControllerTest {
     }
 
     @Test
+    @WithAnonymousUser
     void shouldBlockUnauthorizedCalls() throws Exception {
         mockMvc.perform(get("/")).andDo(print()).andExpect(status().isUnauthorized());
         mockMvc.perform(get("/" + TEST_COMPANY_NUMBER)).andDo(print())
@@ -99,5 +102,28 @@ class ChsMonitorApiControllerTest {
                 .queryParam("itemsPerPage", 10).encode().toUriString();
         mockMvc.perform(get(template)).andDo(print())
                 .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE));
+    }
+
+    @Test
+    @WithMockUser
+    void shouldFailWithNullValues() throws Exception {
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+                .queryParam("companyNumber", Optional.empty()).queryParam("startIndex", 0)
+                .queryParam("itemsPerPage", 10).encode().toUriString();
+        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
+                status().reason("Required parameter 'companyNumber' is not present."));
+
+        template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+                .queryParam("companyNumber", COMPANY_NUMBER).queryParam("startIndex",
+                        Optional.empty())
+                .queryParam("itemsPerPage", 10).encode().toUriString();
+        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
+                status().reason("Required parameter 'startIndex' is not present."));
+
+        template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+                .queryParam("companyNumber", COMPANY_NUMBER).queryParam("startIndex", 0)
+                .queryParam("itemsPerPage", Optional.empty()).encode().toUriString();
+        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
+                status().reason("Required parameter 'itemsPerPage' is not present."));
     }
 }
