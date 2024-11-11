@@ -45,11 +45,11 @@ class ChsMonitorApiControllerTest {
     private final LocalDateTime CREATED = NOW.minus(Period.ofDays(1))
             .truncatedTo(ChronoUnit.SECONDS);
     private final boolean ACTIVE = true;
+    private String EXPECTED_RESPONSE;
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private SubscriptionService subscriptionService;
-    private String EXPECTED_RESPONSE;
 
 
     @Test
@@ -95,7 +95,7 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyInt(), anyInt())).thenReturn(
+        when(subscriptionService.getSubscriptions(anyString(), anyString(), anyInt(), anyInt())).thenReturn(
                 SUBSCRIPTIONS);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
@@ -114,9 +114,9 @@ class ChsMonitorApiControllerTest {
                 status().reason("Required parameter 'companyNumber' is not present."));
 
         template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", COMPANY_NUMBER).queryParam("startIndex",
-                        Optional.empty())
-                .queryParam("itemsPerPage", 10).encode().toUriString();
+                .queryParam("companyNumber", COMPANY_NUMBER)
+                .queryParam("startIndex", Optional.empty()).queryParam("itemsPerPage", 10).encode()
+                .toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
                 status().reason("Required parameter 'startIndex' is not present."));
 

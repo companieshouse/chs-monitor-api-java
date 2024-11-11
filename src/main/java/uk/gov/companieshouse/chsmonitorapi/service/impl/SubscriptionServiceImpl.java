@@ -1,5 +1,6 @@
 package uk.gov.companieshouse.chsmonitorapi.service.impl;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public List<Subscription> getSubscriptions(String companyNumber, int startIndex,
+    public List<Subscription> getSubscriptions(String userId, String companyNumber, int startIndex,
             int itemsPerPage) throws ArrayIndexOutOfBoundsException {
 
         // TODO: actually get these once mongo interface exists
@@ -59,7 +60,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Subscription getSubscription(String companyNumber) throws ServiceException {
+    public Subscription getSubscription(String userId, String companyNumber) throws ServiceException {
         // TODO: actually get this
         Subscription subscription = new Subscription();
         if (subscription == null) {
@@ -79,12 +80,12 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public void createSubscription(String companyNumber) throws ServiceException {
+    public void createSubscription(String userId, String companyNumber) throws ServiceException {
 
     }
 
     @Override
-    public void deleteSubscription(String companyNumber) throws ServiceException {
+    public void deleteSubscription(String userId, String companyNumber) throws ServiceException {
 
     }
 }

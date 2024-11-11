@@ -38,8 +38,8 @@ public class ChsMonitorApiController {
             @RequestParam @NonNull String companyNumber, @RequestParam @NonNull int startIndex,
             @RequestParam @NonNull int itemsPerPage) {
         try {
-            List<Subscription> subscriptions = subscriptionService.getSubscriptions(companyNumber,
-                    startIndex, itemsPerPage);
+            List<Subscription> subscriptions = subscriptionService.getSubscriptions(
+                    request.getSession().getId(), companyNumber, startIndex, itemsPerPage);
             return ResponseEntity.ok(subscriptions);
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
@@ -53,7 +53,8 @@ public class ChsMonitorApiController {
     public ResponseEntity<Subscription> getSubscription(HttpServletRequest request,
             @PathVariable("companyNumber") @NonNull String companyNumber) {
         try {
-            Subscription subscription = subscriptionService.getSubscription(companyNumber);
+            Subscription subscription = subscriptionService.getSubscription(
+                    request.getSession().getId(), companyNumber);
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -64,7 +65,7 @@ public class ChsMonitorApiController {
     public ResponseEntity<HttpStatus> createSubscription(HttpServletRequest request,
             @PathVariable @NonNull String companyNumber) {
         try {
-            subscriptionService.createSubscription(companyNumber);
+            subscriptionService.createSubscription(request.getSession().getId(), companyNumber);
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -75,7 +76,7 @@ public class ChsMonitorApiController {
     public ResponseEntity<HttpStatus> deleteSubscription(HttpServletRequest request,
             @PathVariable @NonNull String companyNumber) {
         try {
-            subscriptionService.deleteSubscription(companyNumber);
+            subscriptionService.deleteSubscription(request.getSession().getId(), companyNumber);
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
