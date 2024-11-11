@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 import uk.gov.companieshouse.chsmonitorapi.model.Subscription;
@@ -34,8 +35,8 @@ public class ChsMonitorApiController {
 
     @GetMapping
     public ResponseEntity<List<Subscription>> getSubscriptions(HttpServletRequest request,
-            @PathVariable @NonNull String companyNumber, @PathVariable @NonNull int startIndex,
-            @PathVariable @NonNull int itemsPerPage) {
+            @RequestParam @NonNull String companyNumber, @RequestParam @NonNull int startIndex,
+            @RequestParam @NonNull int itemsPerPage) {
         try {
             List<Subscription> subscriptions = subscriptionService.getSubscriptions(companyNumber,
                     startIndex, itemsPerPage);
@@ -50,7 +51,7 @@ public class ChsMonitorApiController {
 
     @GetMapping("/{companyNumber}")
     public ResponseEntity<Subscription> getSubscription(HttpServletRequest request,
-            @PathVariable @NonNull String companyNumber) {
+            @PathVariable("companyNumber") @NonNull String companyNumber) {
         try {
             Subscription subscription = subscriptionService.getSubscription(companyNumber);
             return ResponseEntity.ok(subscription);
