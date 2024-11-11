@@ -95,8 +95,8 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyString(), anyInt(), anyInt())).thenReturn(
-                SUBSCRIPTIONS);
+        when(subscriptionService.getSubscriptions(anyString(), anyString(), anyInt(),
+                anyInt())).thenReturn(SUBSCRIPTIONS);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
                 .queryParam("itemsPerPage", 10).encode().toUriString();
@@ -125,5 +125,16 @@ class ChsMonitorApiControllerTest {
                 .queryParam("itemsPerPage", Optional.empty()).encode().toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
                 status().reason("Required parameter 'itemsPerPage' is not present."));
+    }
+
+    @Test
+    @WithMockUser
+    void shouldReturnStatus416() throws Exception {
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+                .queryParam("companyNumber", COMPANY_NUMBER)
+                .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10).encode()
+                .toUriString();
+        mockMvc.perform(get(template)).andDo(print())
+                .andExpect(status().isRequestedRangeNotSatisfiable());
     }
 }
