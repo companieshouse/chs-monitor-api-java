@@ -132,8 +132,8 @@ class ChsMonitorApiControllerTest {
     void shouldReturnStatus416() throws Exception {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", COMPANY_NUMBER)
-                .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10).encode()
-                .toUriString();
+                .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10)
+                .encode().toUriString();
         mockMvc.perform(get(template)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
     }
