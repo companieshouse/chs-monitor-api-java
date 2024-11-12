@@ -6,15 +6,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import config.TestApplicationConfig;
+import uk.gov.companieshouse.chsmonitorapi.config.TestApplicationConfig;
 import java.io.IOException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.api.InternalApiClient;
 import uk.gov.companieshouse.api.company.CompanyDetails;

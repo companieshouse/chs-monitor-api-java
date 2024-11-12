@@ -11,7 +11,7 @@ public class Document {
     private int startIndex;
     private int totalCount;
     private String kind;
-    private List<Subscription> items;
+    private List<SubscriptionDocument> items;
 
     /**
      * Gets items per page.
@@ -90,7 +90,7 @@ public class Document {
      *
      * @return the items
      */
-    public List<Subscription> getItems() {
+    public List<SubscriptionDocument> getItems() {
         return items;
     }
 
@@ -99,7 +99,7 @@ public class Document {
      *
      * @param items the items
      */
-    public void setItems(List<Subscription> items) {
+    public void setItems(List<SubscriptionDocument> items) {
         this.items = items;
     }
 }
