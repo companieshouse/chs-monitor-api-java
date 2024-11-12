@@ -2,11 +2,13 @@ package uk.gov.companieshouse.chsmonitorapi.model;
 
 import java.time.LocalDateTime;
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
  * Subscription represents a monitor subscription.
  */
-public class Subscription {
+@Document(collection = "query")
+public class SubscriptionDocument {
 
     @Id
     private String id;
