@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,7 @@ class MonitorMongoRepositoryTest {
     private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
     @Autowired
     private MonitorMongoRepository monitorMongoRepository;
+    private SubscriptionDocument document;
 
     @DynamicPropertySource
     static void setMongoDbProperties(DynamicPropertyRegistry registry) {
@@ -36,13 +36,13 @@ class MonitorMongoRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        SubscriptionDocument document = getSubscriptionDocument();
+        document = getSubscriptionDocument();
         monitorMongoRepository.insert(document);
     }
 
     @AfterEach
-    void tearDown(){
-        monitorMongoRepository.deleteById("testId");
+    void tearDown() {
+        monitorMongoRepository.delete(document);
     }
 
     @Test
@@ -64,9 +64,9 @@ class MonitorMongoRepositoryTest {
     }
 
     private @NotNull SubscriptionDocument getSubscriptionDocument() {
-        SubscriptionDocument document = new SubscriptionDocument();
+        document = new SubscriptionDocument();
         document.setCompanyNumber(VALID_COMPANY_NUMBER);
-        document.setId("testId");
+        document.setUserId(USER_ID);
         return document;
     }
 }
