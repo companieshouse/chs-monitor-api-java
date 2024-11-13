@@ -3,7 +3,10 @@ package uk.gov.companieshouse.chsmonitorapi.repository;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Optional;
+import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
@@ -31,11 +34,15 @@ class MonitorMongoRepositoryTest {
         registry.add("spring.data.mongodb.uri", mongoDBContainer::getReplicaSetUrl);
     }
 
-    @BeforeAll
-    static void setUp(@Autowired MonitorMongoRepository mongoRepository) {
-        SubscriptionDocument document = new SubscriptionDocument();
-        document.setCompanyNumber(VALID_COMPANY_NUMBER);
-        mongoRepository.save(document);
+    @BeforeEach
+    void setUp() {
+        SubscriptionDocument document = getSubscriptionDocument();
+        monitorMongoRepository.insert(document);
+    }
+
+    @AfterEach
+    void tearDown(){
+        monitorMongoRepository.deleteById("testId");
     }
 
     @Test
@@ -56,4 +63,10 @@ class MonitorMongoRepositoryTest {
         assertTrue(retrievedDocument.isEmpty());
     }
 
+    private @NotNull SubscriptionDocument getSubscriptionDocument() {
+        SubscriptionDocument document = new SubscriptionDocument();
+        document.setCompanyNumber(VALID_COMPANY_NUMBER);
+        document.setId("testId");
+        return document;
+    }
 }
