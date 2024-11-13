@@ -1,7 +1,12 @@
 package uk.gov.companieshouse.chsmonitorapi.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
@@ -9,6 +14,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.data.mongo.DataMongoTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.MongoDBContainer;
@@ -42,7 +49,7 @@ class MonitorMongoRepositoryTest {
 
     @AfterEach
     void tearDown() {
-        monitorMongoRepository.delete(document);
+        monitorMongoRepository.deleteAll();
     }
 
     @Test
@@ -61,6 +68,26 @@ class MonitorMongoRepositoryTest {
                 USER_ID, INVALID_COMPANY_NUMBER);
 
         assertTrue(retrievedDocument.isEmpty());
+    }
+
+    @Test
+    void testPaginationQuery() {
+        List<SubscriptionDocument> docs = new ArrayList<>();
+        for (int i = 0; i < 10; i++) {
+            docs.add(new SubscriptionDocument(USER_ID,
+                    String.valueOf(Integer.parseInt(VALID_COMPANY_NUMBER + i + 1)),
+                    "CompanyName" + i, "", true, LocalDateTime.now(), LocalDateTime.now()));
+        }
+        monitorMongoRepository.insert(docs);
+        PageRequest pageRequest = PageRequest.of(0, 2);
+        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserId(USER_ID, pageRequest);
+
+        assertEquals(6, documentPage.getTotalPages());
+        assertEquals(11, documentPage.getTotalElements());
+        assertEquals(2, documentPage.stream().count());
+        assertNotEquals(documentPage.toList().getFirst().getCompanyNumber(), documentPage.toList().getLast().getCompanyNumber());
+        documentPage.nextPageable();
+        assertEquals(2, documentPage.stream().count());
     }
 
     private @NotNull SubscriptionDocument getSubscriptionDocument() {

@@ -5,6 +5,8 @@ import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLI
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +26,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 
 @RestController
 @RequestMapping("/following")
+@EnableSpringDataWebSupport
 public class ChsMonitorApiController {
 
     private static final Logger logger = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
@@ -36,7 +39,8 @@ public class ChsMonitorApiController {
 
     @GetMapping
     public ResponseEntity<Page<SubscriptionDocument>> getSubscriptions(HttpServletRequest request,
-            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage) {
+            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage,
+            Pageable pageable) {
         try {
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
                     request.getSession().getId(), startIndex, itemsPerPage);

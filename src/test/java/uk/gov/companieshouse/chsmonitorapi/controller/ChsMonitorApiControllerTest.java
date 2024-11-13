@@ -25,6 +25,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -36,6 +37,7 @@ import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 @WebMvcTest(ChsMonitorApiController.class)
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
+@EnableSpringDataWebSupport
 class ChsMonitorApiControllerTest {
 
     private final String TEST_COMPANY_NUMBER = "1777777";
@@ -50,6 +52,7 @@ class ChsMonitorApiControllerTest {
     private final boolean ACTIVE = true;
     private Page<SubscriptionDocument> SUBSCRIPTIONS;
     private String EXPECTED_RESPONSE;
+    private String RESPONSE_JSON_OBJECT;
 
     @Autowired
     private MockMvc mockMvc;
@@ -85,29 +88,37 @@ class ChsMonitorApiControllerTest {
         SUBSCRIPTION.setCompanyNumber(COMPANY_NUMBER);
         SUBSCRIPTION.setUserId(USER_ID);
         SUBSCRIPTION.setCreated(CREATED);
-        SUBSCRIPTIONS = new PageImpl<>(List.of(SUBSCRIPTION));
+        SUBSCRIPTIONS = new PageImpl<>(List.of(SUBSCRIPTION, SUBSCRIPTION, SUBSCRIPTION));
 
-        EXPECTED_RESPONSE = """
-                {"content":
-                [{"id":"%s",
+        RESPONSE_JSON_OBJECT = """
+                {"id":"%s",
                 "userId":"%s",
                 "companyNumber":"%s",
                 "companyName":"%s",
                 "query":null,
                 "active":%s,
                 "created":"%s",
-                "updated":null}],
+                "updated":null}
+                """.formatted(TEST_ID, USER_ID, COMPANY_NUMBER, COMPANY_NAME, ACTIVE, CREATED);
+
+        EXPECTED_RESPONSE = """
+                {"content":
+                [
+                %s,
+                %s,
+                %s
+                ],
                 "pageable":"INSTANCE",
-                "totalElements":1,
+                "totalElements":3,
                 "last":true,
                 "totalPages":1,
-                "size":1,
+                "size":3,
                 "number":0,
                 "sort":{"empty":true,"unsorted":true,"sorted":false},
-                "numberOfElements":1,
+                "numberOfElements":3,
                 "first":true,
                 "empty":false}
-                """.formatted(TEST_ID, USER_ID, COMPANY_NUMBER, COMPANY_NAME, ACTIVE, CREATED);
+                """.formatted(RESPONSE_JSON_OBJECT, RESPONSE_JSON_OBJECT, RESPONSE_JSON_OBJECT);
     }
 
     @Test

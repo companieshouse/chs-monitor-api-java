@@ -10,6 +10,16 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "query")
 public class SubscriptionDocument {
 
+    @Id
+    private String id;
+    private String userId;
+    private String companyNumber;
+    private String companyName;
+    private String query;
+    private boolean active;
+    private LocalDateTime created;
+    private LocalDateTime updated;
+
     public SubscriptionDocument() {
     }
 
@@ -23,16 +33,6 @@ public class SubscriptionDocument {
         this.created = created;
         this.updated = updated;
     }
-
-    @Id
-    private String id;
-    private String userId;
-    private String companyNumber;
-    private String companyName;
-    private String query;
-    private boolean active;
-    private LocalDateTime created;
-    private LocalDateTime updated;
 
     /**
      * Gets id.
