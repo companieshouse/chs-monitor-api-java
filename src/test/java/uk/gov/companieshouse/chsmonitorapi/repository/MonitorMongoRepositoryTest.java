@@ -1,6 +1,8 @@
 package uk.gov.companieshouse.chsmonitorapi.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -80,13 +82,29 @@ class MonitorMongoRepositoryTest {
         }
         monitorMongoRepository.insert(docs);
         PageRequest pageRequest = PageRequest.of(0, 2);
-        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserId(USER_ID, pageRequest);
+        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserId(
+                USER_ID, pageRequest);
 
         assertEquals(6, documentPage.getTotalPages());
         assertEquals(11, documentPage.getTotalElements());
         assertEquals(2, documentPage.stream().count());
-        assertNotEquals(documentPage.toList().getFirst().getCompanyNumber(), documentPage.toList().getLast().getCompanyNumber());
-        documentPage.nextPageable();
+
+        List<String> firstCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+                documentPage.toList().getLast().getCompanyNumber());
+        List<String> secondCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+                documentPage.toList().getLast().getCompanyNumber());
+        assertNotEquals(documentPage.toList().getFirst().getCompanyNumber(),
+                documentPage.toList().getLast().getCompanyNumber());
+
+        documentPage = monitorMongoRepository.findSubscriptionsByUserId(
+                USER_ID, pageRequest.next());
+
+        List<String> thirdCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+                documentPage.toList().getLast().getCompanyNumber());
+
+        assertTrue(firstCompanyNumbers.containsAll(secondCompanyNumbers));
+        assertFalse(firstCompanyNumbers.containsAll(thirdCompanyNumbers));
+        assertFalse(documentPage.isFirst());
         assertEquals(2, documentPage.stream().count());
     }
 
