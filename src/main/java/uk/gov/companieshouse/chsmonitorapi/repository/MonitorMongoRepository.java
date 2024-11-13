@@ -16,4 +16,6 @@ public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocu
 
     Page<SubscriptionDocument> findSubscriptionsByUserIdAndCompanyNumber(String userId,
             String companyNumber, Pageable pageable);
+
+    void deleteAllByUserIdAndCompanyNumber(String userId, String companyNumber);
 }
