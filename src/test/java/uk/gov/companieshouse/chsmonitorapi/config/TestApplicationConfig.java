@@ -1,4 +1,4 @@
-package config;
+package uk.gov.companieshouse.chsmonitorapi.config;
 
 import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLICATION_NAME_SPACE;
 
