@@ -3,8 +3,9 @@ package uk.gov.companieshouse.chsmonitorapi.controller;
 import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLICATION_NAME_SPACE;
 
 import jakarta.servlet.http.HttpServletRequest;
-import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -16,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
-import uk.gov.companieshouse.chsmonitorapi.model.Subscription;
+import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -34,13 +35,16 @@ public class ChsMonitorApiController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Subscription>> getSubscriptions(HttpServletRequest request,
+    public ResponseEntity<Page<SubscriptionDocument>> getSubscriptions(HttpServletRequest request,
             @RequestParam @NonNull String companyNumber, @RequestParam @NonNull int startIndex,
             @RequestParam @NonNull int itemsPerPage) {
         try {
-            List<Subscription> subscriptions = subscriptionService.getSubscriptions(
+            Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
                     request.getSession().getId(), companyNumber, startIndex, itemsPerPage);
-            return ResponseEntity.ok(subscriptions);
+            HttpHeaders headers = new HttpHeaders();
+            headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
+            headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));
+            return ResponseEntity.ok().headers(headers).body(subscriptions);
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
         } catch (ServiceException exception) {
@@ -50,10 +54,10 @@ public class ChsMonitorApiController {
     }
 
     @GetMapping("/{companyNumber}")
-    public ResponseEntity<Subscription> getSubscription(HttpServletRequest request,
+    public ResponseEntity<SubscriptionDocument> getSubscription(HttpServletRequest request,
             @PathVariable("companyNumber") @NonNull String companyNumber) {
         try {
-            Subscription subscription = subscriptionService.getSubscription(
+            SubscriptionDocument subscription = subscriptionService.getSubscription(
                     request.getSession().getId(), companyNumber);
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {

@@ -10,6 +10,20 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Document(collection = "query")
 public class SubscriptionDocument {
 
+    public SubscriptionDocument() {
+    }
+
+    public SubscriptionDocument(String userId, String companyNumber, String companyName,
+            String query, boolean active, LocalDateTime created, LocalDateTime updated) {
+        this.userId = userId;
+        this.companyNumber = companyNumber;
+        this.companyName = companyName;
+        this.query = query;
+        this.active = active;
+        this.created = created;
+        this.updated = updated;
+    }
+
     @Id
     private String id;
     private String userId;

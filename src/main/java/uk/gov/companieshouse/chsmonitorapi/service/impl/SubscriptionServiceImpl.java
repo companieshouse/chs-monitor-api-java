@@ -1,81 +1,88 @@
 package uk.gov.companieshouse.chsmonitorapi.service.impl;
 
-import jakarta.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+import uk.gov.companieshouse.api.error.ApiErrorResponseException;
+import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
-import uk.gov.companieshouse.chsmonitorapi.model.Subscription;
+import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
+import uk.gov.companieshouse.chsmonitorapi.repository.MonitorMongoRepository;
 import uk.gov.companieshouse.chsmonitorapi.service.CompanyProfileService;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
 
+@Service
 public class SubscriptionServiceImpl implements SubscriptionService {
 
     private final CompanyProfileService companyProfileService;
     private final Logger logger;
+    private final MonitorMongoRepository mongoRepository;
 
     @Autowired
-    public SubscriptionServiceImpl(Logger logger, CompanyProfileService companyProfileService) {
+    public SubscriptionServiceImpl(Logger logger, CompanyProfileService companyProfileService,
+            MonitorMongoRepository mongoRepository) {
         this.logger = logger;
         this.companyProfileService = companyProfileService;
+        this.mongoRepository = mongoRepository;
     }
 
     @Override
-    public List<Subscription> getSubscriptions(String userId, String companyNumber, int startIndex,
-            int itemsPerPage) throws ArrayIndexOutOfBoundsException {
+    public Page<SubscriptionDocument> getSubscriptions(String userId, String companyNumber,
+            int startIndex, int itemsPerPage) throws ArrayIndexOutOfBoundsException {
 
-        // TODO: actually get these once mongo interface exists
-        List<Subscription> subscriptions = new ArrayList<>();
-        if (subscriptions.isEmpty()) {
-            return subscriptions;
+        PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
+
+        Page<SubscriptionDocument> pagedSubscriptions =
+                mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(
+                userId, companyNumber, pageRequest).orElse(Page.empty());
+
+        if (pagedSubscriptions.isEmpty()) {
+            return pagedSubscriptions;
         }
 
-        subscriptions.forEach(subscription -> {
-            //TODO: why? to account for name updates since subscription entry was added?
+        pagedSubscriptions.forEach(subscriptionDocument -> {
             try {
-                subscription.setCompanyName(
-                        companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
-                                .getCompanyName());
-            } catch (ServiceException ex) {
-                // TODO: figure this out
+                subscriptionDocument.setCompanyName(companyProfileService.getCompanyDetails(
+                        subscriptionDocument.getCompanyNumber()).getCompanyName());
+            } catch (ServiceException | ApiErrorResponseException | URIValidationException ex) {
                 throw new RuntimeException(ex);
+            }
+
+            if (startIndex > pagedSubscriptions.getSize() - 1) {
+                throw new ArrayIndexOutOfBoundsException();
             }
         });
 
-        if (itemsPerPage <= 0) {
-            itemsPerPage = subscriptions.size();
-        }
-
-        if (startIndex > subscriptions.size() - 1) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-
-        int lastItem = startIndex + itemsPerPage;
-        if (lastItem > subscriptions.size()) {
-            lastItem = subscriptions.size();
-        }
-
-        return subscriptions.subList(startIndex, lastItem);
+        return pagedSubscriptions;
     }
 
     @Override
-    public Subscription getSubscription(String userId, String companyNumber) throws ServiceException {
-        // TODO: actually get this
-        Subscription subscription = new Subscription();
-        if (subscription == null) {
-            throw new RuntimeException();
+    public SubscriptionDocument getSubscription(String userId, String companyNumber)
+            throws ServiceException {
+        Optional<SubscriptionDocument> optionalSubscription =
+                mongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                userId, companyNumber);
+
+        if (optionalSubscription.isEmpty()) {
+            // TODO: confirm this works the same on the FE as returning nil in the golang service
+            return new SubscriptionDocument();
         }
 
-        // TODO: why? to account for name updates since subscription entry was added?
+        SubscriptionDocument subscription = optionalSubscription.get();
+
         try {
             subscription.setCompanyName(
-                    companyProfileService.getCompanyDetails(subscription.getCompanyName())
+                    companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
                             .getCompanyName());
             return subscription;
         } catch (ServiceException ex) {
             // TODO: figure this out
             throw new RuntimeException(ex);
+        } catch (ApiErrorResponseException | URIValidationException e) {
+            throw new RuntimeException(e);
         }
     }
 

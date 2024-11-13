@@ -18,12 +18,11 @@ import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 @Testcontainers
 class MonitorMongoRepositoryTest {
 
-    @Container
-    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
-
+    public static final String USER_ID = "userId";
     public static final String VALID_COMPANY_NUMBER = "12345678";
     public static final String INVALID_COMPANY_NUMBER = "1234";
-
+    @Container
+    private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
     @Autowired
     private MonitorMongoRepository monitorMongoRepository;
 
@@ -41,16 +40,18 @@ class MonitorMongoRepositoryTest {
 
     @Test
     void testFindSubscriptionByCompanyNumber() {
-        Optional<SubscriptionDocument> retrievedDocument = monitorMongoRepository.findSubscriptionByCompanyNumber(
-                VALID_COMPANY_NUMBER);
+        Optional<SubscriptionDocument> retrievedDocument =
+                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                USER_ID, VALID_COMPANY_NUMBER);
 
         assertTrue(retrievedDocument.isPresent());
     }
 
     @Test
     void testFindSubscriptionByCompanyNumber_IsEmpty() {
-        Optional<SubscriptionDocument> retrievedDocument = monitorMongoRepository.findSubscriptionByCompanyNumber(
-                INVALID_COMPANY_NUMBER);
+        Optional<SubscriptionDocument> retrievedDocument =
+                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                USER_ID, INVALID_COMPANY_NUMBER);
 
         assertTrue(retrievedDocument.isEmpty());
     }
