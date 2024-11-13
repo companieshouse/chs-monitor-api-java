@@ -60,8 +60,7 @@ class SubscriptionServiceTest {
         SubscriptionDocument subscriptionDocument = new SubscriptionDocument("userId",
                 "companyNumber", "companyName", "query", true, NOW, NOW.minus(Period.ofDays(1)));
 
-        Optional<Page<SubscriptionDocument>> subscriptionDocumentPage = Optional.of(
-                new PageImpl<>(List.of(subscriptionDocument)));
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(List.of(subscriptionDocument));
         when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
@@ -87,9 +86,8 @@ class SubscriptionServiceTest {
 
         Pageable pageable = Pageable.unpaged();
 
-        Optional<Page<SubscriptionDocument>> subscriptionDocumentPage = Optional.of(
-                new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
-                        subscriptionDocumentList.size()));
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
+                        subscriptionDocumentList.size());
 
         when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
@@ -116,9 +114,8 @@ class SubscriptionServiceTest {
 
         Pageable pageable = Pageable.unpaged();
 
-        Optional<Page<SubscriptionDocument>> subscriptionDocumentPage = Optional.of(
-                new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
-                        subscriptionDocumentList.size()));
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
+                        subscriptionDocumentList.size());
 
         when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
@@ -135,7 +132,7 @@ class SubscriptionServiceTest {
             throws ServiceException {
 
         when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
-                any(Pageable.class))).thenReturn(Optional.of(Page.empty()));
+                any(Pageable.class))).thenReturn(Page.empty());
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));

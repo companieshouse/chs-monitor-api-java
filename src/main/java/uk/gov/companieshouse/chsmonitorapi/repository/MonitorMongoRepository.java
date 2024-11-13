@@ -14,6 +14,6 @@ public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocu
     Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumber(String userId,
             String companyNumber);
 
-    Optional<Page<SubscriptionDocument>> findSubscriptionsByUserIdAndCompanyNumber(String userId,
+    Page<SubscriptionDocument> findSubscriptionsByUserIdAndCompanyNumber(String userId,
             String companyNumber, Pageable pageable);
 }

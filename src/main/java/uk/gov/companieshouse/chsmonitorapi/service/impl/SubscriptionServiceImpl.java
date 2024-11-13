@@ -37,9 +37,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         Page<SubscriptionDocument> pagedSubscriptions =
                 mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(
-                userId, companyNumber, pageRequest).orElse(Page.empty());
+                userId, companyNumber, pageRequest);
 
-        if (pagedSubscriptions.isEmpty()) {
+        if (pagedSubscriptions.get().findFirst().isEmpty()) {
             return pagedSubscriptions;
         }
 
