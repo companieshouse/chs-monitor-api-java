@@ -27,7 +27,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
@@ -65,17 +64,17 @@ class ChsMonitorApiControllerTest {
     }
 
     //    complaining about env vars now
-        @Test
-        @WithAnonymousUser
-        void shouldBlockUnauthorizedCalls() throws Exception {
-            mockMvc.perform(get("/")).andDo(print()).andExpect(status().isUnauthorized());
-            mockMvc.perform(get("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                    .andExpect(status().isUnauthorized());
-            mockMvc.perform(post("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                    .andExpect(status().isForbidden());
-            mockMvc.perform(delete("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                    .andExpect(status().isForbidden());
-        }
+    @Test
+    @WithAnonymousUser
+    void shouldBlockUnauthorizedCalls() throws Exception {
+        mockMvc.perform(get("/")).andDo(print()).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/" + TEST_COMPANY_NUMBER)).andDo(print())
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/" + TEST_COMPANY_NUMBER)).andDo(print())
+                .andExpect(status().isForbidden());
+        mockMvc.perform(delete("/" + TEST_COMPANY_NUMBER)).andDo(print())
+                .andExpect(status().isForbidden());
+    }
 
     @BeforeEach
     void beforeEach() {
@@ -114,8 +113,8 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyString(), anyInt(),
-                anyInt())).thenReturn(SUBSCRIPTIONS);
+        when(subscriptionService.getSubscriptions(anyString(), anyInt(), anyInt())).thenReturn(
+                SUBSCRIPTIONS);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
                 .queryParam("itemsPerPage", 10).encode().toUriString();
@@ -127,21 +126,14 @@ class ChsMonitorApiControllerTest {
     @WithMockUser
     void shouldFailWithNullValues() throws Exception {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", Optional.empty()).queryParam("startIndex", 0)
-                .queryParam("itemsPerPage", 10).encode().toUriString();
-        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
-                status().reason("Required parameter 'companyNumber' is not present."));
-
-        template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", COMPANY_NUMBER)
                 .queryParam("startIndex", Optional.empty()).queryParam("itemsPerPage", 10).encode()
                 .toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
                 status().reason("Required parameter 'startIndex' is not present."));
 
         template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", COMPANY_NUMBER).queryParam("startIndex", 0)
-                .queryParam("itemsPerPage", Optional.empty()).encode().toUriString();
+                .queryParam("startIndex", 0).queryParam("itemsPerPage", Optional.empty()).encode()
+                .toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
                 status().reason("Required parameter 'itemsPerPage' is not present."));
     }
@@ -149,11 +141,10 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnStatus416() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyString(), anyInt(),
-                anyInt())).thenThrow(new ArrayIndexOutOfBoundsException());
+        when(subscriptionService.getSubscriptions(anyString(), anyInt(), anyInt())).thenThrow(
+                new ArrayIndexOutOfBoundsException());
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", COMPANY_NUMBER)
                 .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10)
                 .encode().toUriString();
         mockMvc.perform(get(template)).andDo(print())

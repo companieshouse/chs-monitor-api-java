@@ -31,14 +31,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId, String companyNumber,
-            int startIndex, int itemsPerPage) throws ArrayIndexOutOfBoundsException {
+    public Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex,
+            int itemsPerPage) throws ArrayIndexOutOfBoundsException {
 
         PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
 
-        Page<SubscriptionDocument> pagedSubscriptions =
-                mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(
-                userId, companyNumber, pageRequest);
+        Page<SubscriptionDocument> pagedSubscriptions = mongoRepository.findSubscriptionsByUserId(
+                userId, pageRequest);
 
         if (pagedSubscriptions.get().findFirst().isEmpty()) {
             return pagedSubscriptions;

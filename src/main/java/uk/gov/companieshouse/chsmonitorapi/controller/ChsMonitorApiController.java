@@ -36,11 +36,10 @@ public class ChsMonitorApiController {
 
     @GetMapping
     public ResponseEntity<Page<SubscriptionDocument>> getSubscriptions(HttpServletRequest request,
-            @RequestParam @NonNull String companyNumber, @RequestParam @NonNull int startIndex,
-            @RequestParam @NonNull int itemsPerPage) {
+            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage) {
         try {
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getSession().getId(), companyNumber, startIndex, itemsPerPage);
+                    request.getSession().getId(), startIndex, itemsPerPage);
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
             headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));

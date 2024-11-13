@@ -1,8 +1,6 @@
 package uk.gov.companieshouse.chsmonitorapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -13,7 +11,6 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,20 +51,20 @@ class SubscriptionServiceTest {
     private Logger logger;
 
     @Test
-    void shouldReturnSinglePageOfSubscriptionDocuments()
-            throws ServiceException {
+    void shouldReturnSinglePageOfSubscriptionDocuments() throws ServiceException {
 
         SubscriptionDocument subscriptionDocument = new SubscriptionDocument("userId",
                 "companyNumber", "companyName", "query", true, NOW, NOW.minus(Period.ofDays(1)));
 
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(List.of(subscriptionDocument));
-        when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
+                List.of(subscriptionDocument));
+        when(mongoRepository.findSubscriptionsByUserId(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
-                "companyNumber", 0, 1);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
+                1);
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.stream().allMatch(this::correctType));
@@ -75,8 +72,7 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void shouldReturn2PagesOfSubscriptionDocuments()
-            throws ServiceException {
+    void shouldReturn2PagesOfSubscriptionDocuments() throws ServiceException {
         List<SubscriptionDocument> subscriptionDocumentList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             subscriptionDocumentList.add(
@@ -86,25 +82,24 @@ class SubscriptionServiceTest {
 
         Pageable pageable = Pageable.unpaged();
 
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
-                        subscriptionDocumentList.size());
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
+                subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
 
-        when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
+        when(mongoRepository.findSubscriptionsByUserId(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
-                "companyNumber", 0, 5);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
+                5);
 
         assertEquals(2, documentPage.getTotalPages());
         logger.info(documentPage.toString());
     }
 
     @Test
-    void shouldThrowAnOutOfBoundsException()
-            throws ServiceException {
+    void shouldThrowAnOutOfBoundsException() throws ServiceException {
         List<SubscriptionDocument> subscriptionDocumentList = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             subscriptionDocumentList.add(
@@ -114,34 +109,32 @@ class SubscriptionServiceTest {
 
         Pageable pageable = Pageable.unpaged();
 
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(subscriptionDocumentList.subList(0, 5), pageable,
-                        subscriptionDocumentList.size());
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
+                subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
 
-        when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
+        when(mongoRepository.findSubscriptionsByUserId(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        assertThrows(ArrayIndexOutOfBoundsException.class, () -> subscriptionService.getSubscriptions("userId",
-                "companyNumber", 21, 5));
+        assertThrows(ArrayIndexOutOfBoundsException.class,
+                () -> subscriptionService.getSubscriptions("userId", 21, 5));
     }
 
     @Test
-    void shouldReturnAPageWithAnEmptyOptional()
-            throws ServiceException {
+    void shouldReturnAPageWithAnEmptyOptional() throws ServiceException {
 
-        when(mongoRepository.findSubscriptionsByUserIdAndCompanyNumber(anyString(), anyString(),
+        when(mongoRepository.findSubscriptionsByUserId(anyString(),
                 any(Pageable.class))).thenReturn(Page.empty());
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        subscriptionService.getSubscriptions("userId",
-                    "companyNumber", 0, 5);
+        subscriptionService.getSubscriptions("userId", 0, 5);
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
-                "companyNumber", 0, 5);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
+                5);
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.get().findFirst().isEmpty());
