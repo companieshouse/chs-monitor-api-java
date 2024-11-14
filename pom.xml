@@ -29,7 +29,6 @@
     <private-api-sdk-java.version>4.0.235</private-api-sdk-java.version>
     <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
     <web-security-java.version>3.1.0</web-security-java.version>
-    <environment-reader.version>3.0.1</environment-reader.version>
 
     <!-- Plugin -->
     <spring-boot-maven-plugin.version>3.3.5</spring-boot-maven-plugin.version>
@@ -132,11 +131,6 @@
       <artifactId>mongodb</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>uk.gov.companieshouse</groupId>
-      <artifactId>environment-reader-library</artifactId>
-      <version>${environment-reader.version}</version>
-    </dependency>
   </dependencies>
 
   <build>
@@ -206,5 +200,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
