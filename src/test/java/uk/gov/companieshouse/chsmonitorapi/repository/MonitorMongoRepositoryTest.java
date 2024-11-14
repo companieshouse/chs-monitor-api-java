@@ -57,7 +57,7 @@ class MonitorMongoRepositoryTest {
     @Test
     void testFindSubscriptionByCompanyNumber() {
         Optional<SubscriptionDocument> retrievedDocument =
-                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 USER_ID, VALID_COMPANY_NUMBER);
 
         assertTrue(retrievedDocument.isPresent());
@@ -66,7 +66,7 @@ class MonitorMongoRepositoryTest {
     @Test
     void testFindSubscriptionByCompanyNumber_IsEmpty() {
         Optional<SubscriptionDocument> retrievedDocument =
-                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                monitorMongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 USER_ID, INVALID_COMPANY_NUMBER);
 
         assertTrue(retrievedDocument.isEmpty());
@@ -82,7 +82,7 @@ class MonitorMongoRepositoryTest {
         }
         monitorMongoRepository.insert(docs);
         PageRequest pageRequest = PageRequest.of(0, 2);
-        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserId(
+        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 USER_ID, pageRequest);
 
         assertEquals(6, documentPage.getTotalPages());
@@ -96,7 +96,7 @@ class MonitorMongoRepositoryTest {
         assertNotEquals(documentPage.toList().getFirst().getCompanyNumber(),
                 documentPage.toList().getLast().getCompanyNumber());
 
-        documentPage = monitorMongoRepository.findSubscriptionsByUserId(
+        documentPage = monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 USER_ID, pageRequest.next());
 
         List<String> thirdCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),

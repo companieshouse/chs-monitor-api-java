@@ -10,10 +10,10 @@ import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 @Repository
 public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocument, String> {
 
-    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumber(String userId,
+    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(String userId,
             String companyNumber);
 
-    Page<SubscriptionDocument> findSubscriptionsByUserId(String userId, Pageable pageable);
+    Page<SubscriptionDocument> findSubscriptionsByUserIdAndActiveIsTrue(String userId, Pageable pageable);
 
     void deleteAllByUserIdAndCompanyNumber(String userId, String companyNumber);
 }

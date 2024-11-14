@@ -48,7 +48,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
-        Page<SubscriptionDocument> pagedSubscriptions = mongoRepository.findSubscriptionsByUserId(
+        Page<SubscriptionDocument> pagedSubscriptions = mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 userId, pageable);
         if (pagedSubscriptions.get().findFirst().isEmpty()) {
             return pagedSubscriptions;
@@ -71,7 +71,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public SubscriptionDocument getSubscription(String userId, String companyNumber)
             throws ServiceException {
         Optional<SubscriptionDocument> optionalSubscription =
-                mongoRepository.findSubscriptionByUserIdAndCompanyNumber(
+                mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);
 
         if (optionalSubscription.isEmpty()) {

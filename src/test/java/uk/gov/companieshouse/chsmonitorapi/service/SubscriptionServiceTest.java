@@ -58,7 +58,7 @@ class SubscriptionServiceTest {
 
         Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
                 List.of(subscriptionDocument));
-        when(mongoRepository.findSubscriptionsByUserId(anyString(),
+        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
@@ -85,7 +85,7 @@ class SubscriptionServiceTest {
         Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
                 subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
 
-        when(mongoRepository.findSubscriptionsByUserId(anyString(),
+        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
@@ -112,7 +112,7 @@ class SubscriptionServiceTest {
         Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
                 subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
 
-        when(mongoRepository.findSubscriptionsByUserId(anyString(),
+        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
@@ -125,7 +125,7 @@ class SubscriptionServiceTest {
     @Test
     void shouldReturnAPageWithAnEmptyOptional() throws ServiceException {
 
-        when(mongoRepository.findSubscriptionsByUserId(anyString(),
+        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(Page.empty());
 
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
