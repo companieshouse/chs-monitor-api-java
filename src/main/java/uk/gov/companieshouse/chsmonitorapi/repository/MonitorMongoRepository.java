@@ -11,16 +11,18 @@ import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 @Repository
 public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocument, String> {
 
-    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(String userId,
-            String companyNumber);
+    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
+            String userId, String companyNumber);
 
-    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(String userId,
-            String companyNumber);
+    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(
+            String userId, String companyNumber);
 
-    Page<SubscriptionDocument> findSubscriptionsByUserIdAndActiveIsTrue(String userId, Pageable pageable);
+    Page<SubscriptionDocument> findSubscriptionsByUserIdAndActiveIsTrue(String userId,
+            Pageable pageable);
 
     void deleteAllByUserIdAndCompanyNumber(String userId, String companyNumber);
 
     @Update("{ '$push' : { 'active' : ?2 } }")
-    void findAndPushActiveByUserIdAndCompanyNumber(String userId, String companyNumber, boolean active);
+    void findAndPushActiveByUserIdAndCompanyNumber(String userId, String companyNumber,
+            boolean active);
 }
