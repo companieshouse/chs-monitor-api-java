@@ -32,7 +32,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex,
-            int itemsPerPage) throws ArrayIndexOutOfBoundsException {
+            int itemsPerPage) throws ServiceException {
 
         PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
 
@@ -47,8 +47,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             try {
                 subscriptionDocument.setCompanyName(companyProfileService.getCompanyDetails(
                         subscriptionDocument.getCompanyNumber()).getCompanyName());
-            } catch (ServiceException | ApiErrorResponseException | URIValidationException ex) {
-                throw new RuntimeException(ex);
+            } catch (ServiceException ex) {
+                throw new ServiceException(ex.getMessage());
             }
 
             if (startIndex > pagedSubscriptions.getSize() - 1) {
@@ -73,17 +73,10 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         SubscriptionDocument subscription = optionalSubscription.get();
 
-        try {
-            subscription.setCompanyName(
-                    companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
-                            .getCompanyName());
-            return subscription;
-        } catch (ServiceException ex) {
-            // TODO: figure this out
-            throw new RuntimeException(ex);
-        } catch (ApiErrorResponseException | URIValidationException e) {
-            throw new RuntimeException(e);
-        }
+        subscription.setCompanyName(
+                companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
+                        .getCompanyName());
+        return subscription;
     }
 
     @Override

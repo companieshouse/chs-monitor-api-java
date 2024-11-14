@@ -1,6 +1,6 @@
 package uk.gov.companieshouse.chsmonitorapi.exception;
 
-public class ServiceException extends Exception {
+public class ServiceException extends RuntimeException {
 
     public ServiceException(String message, Throwable cause) {
         super(message, cause);

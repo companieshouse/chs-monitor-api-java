@@ -35,12 +35,13 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
                     .getData();
 
             if (companyDetails == null) {
+                logger.error("Company details not found for company number: " + companyNumber);
                 throw new ServiceException(
                         "Company details not found for company number: " + companyNumber);
             }
             return companyDetails;
         } catch (URIValidationException | IOException e) {
-            var message = "Error Retrieving Company Details: " + companyNumber;
+            var message = "Error Retrieving Company Details for company number: " + companyNumber;
             logger.error(message, e);
             throw new ServiceException(message, e);
         }

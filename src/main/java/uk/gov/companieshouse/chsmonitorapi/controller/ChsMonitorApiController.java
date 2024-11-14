@@ -5,6 +5,7 @@ import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLI
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.HttpHeaders;
@@ -39,11 +40,12 @@ public class ChsMonitorApiController {
 
     @GetMapping
     public ResponseEntity<Page<SubscriptionDocument>> getSubscriptions(HttpServletRequest request,
-            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage,
-            Pageable pageable) {
+            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage) {
         try {
+            Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
                     request.getSession().getId(), startIndex, itemsPerPage);
+            // TODO: confirm if this is actually used by browsers / good practice
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
             headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));
