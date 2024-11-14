@@ -6,8 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
-import uk.gov.companieshouse.api.handler.exception.URIValidationException;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.repository.MonitorMongoRepository;
@@ -44,12 +42,9 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         }
 
         pagedSubscriptions.forEach(subscriptionDocument -> {
-            try {
-                subscriptionDocument.setCompanyName(companyProfileService.getCompanyDetails(
-                        subscriptionDocument.getCompanyNumber()).getCompanyName());
-            } catch (ServiceException ex) {
-                throw new ServiceException(ex.getMessage());
-            }
+            subscriptionDocument.setCompanyName(
+                    companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
+                            .getCompanyName());
 
             if (startIndex > pagedSubscriptions.getSize() - 1) {
                 throw new ArrayIndexOutOfBoundsException();
