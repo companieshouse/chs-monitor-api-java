@@ -14,6 +14,9 @@ import uk.gov.companieshouse.chsmonitorapi.service.CompanyProfileService;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
 
+/**
+ * The type Subscription service.
+ */
 @Service
 public class SubscriptionServiceImpl implements SubscriptionService {
 
@@ -21,6 +24,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     private final Logger logger;
     private final MonitorMongoRepository mongoRepository;
 
+    /**
+     * Instantiates a new Subscription service.
+     *
+     * @param logger                the logger
+     * @param companyProfileService the company profile service
+     * @param mongoRepository       the mongo repository
+     */
     @Autowired
     public SubscriptionServiceImpl(Logger logger, CompanyProfileService companyProfileService,
             MonitorMongoRepository mongoRepository) {
