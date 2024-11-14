@@ -48,7 +48,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
-        Page<SubscriptionDocument> pagedSubscriptions = mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
+        Page<SubscriptionDocument> pagedSubscriptions =
+                mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 userId, pageable);
         if (pagedSubscriptions.get().findFirst().isEmpty()) {
             return pagedSubscriptions;
@@ -89,7 +90,11 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void createSubscription(String userId, String companyNumber) throws ServiceException {
-        // TODO: figure out query value, handle save issues (duplication?)
+        if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(userId,
+                companyNumber).isPresent()) {
+            mongoRepository.findAndPushActiveByUserIdAndCompanyNumber(userId, companyNumber, true);
+            return;
+        }
         SubscriptionDocument subscriptionDocument = new SubscriptionDocument(userId, companyNumber,
                 null, null, true, LocalDateTime.now(), LocalDateTime.now());
         mongoRepository.save(subscriptionDocument);
@@ -97,7 +102,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void deleteSubscription(String userId, String companyNumber) throws ServiceException {
-        // TODO: does this work?
-        mongoRepository.deleteAllByUserIdAndCompanyNumber(userId, companyNumber);
+        mongoRepository.findAndPushActiveByUserIdAndCompanyNumber(userId, companyNumber, false);
     }
 }
