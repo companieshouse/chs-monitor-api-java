@@ -112,6 +112,7 @@ class MonitorMongoRepositoryTest {
         document = new SubscriptionDocument();
         document.setCompanyNumber(VALID_COMPANY_NUMBER);
         document.setUserId(USER_ID);
+        document.setActive(true);
         return document;
     }
 }
