@@ -27,6 +27,7 @@ import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.repository.MonitorMongoRepository;
 import uk.gov.companieshouse.chsmonitorapi.service.impl.CompanyProfileServiceImpl;
 import uk.gov.companieshouse.chsmonitorapi.service.impl.SubscriptionServiceImpl;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.logging.Logger;
 
 @ExtendWith(SpringExtension.class)
@@ -43,6 +44,9 @@ class SubscriptionServiceTest {
 
     @MockBean
     private CompanyProfileServiceImpl companyProfileService;
+
+    @MockBean
+    private EnvironmentReader environmentReader;
 
     @Autowired
     private SubscriptionServiceImpl subscriptionService;
