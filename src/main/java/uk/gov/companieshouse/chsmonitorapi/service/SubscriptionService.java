@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chsmonitorapi.service;
 
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 
@@ -8,6 +9,8 @@ public interface SubscriptionService {
 
     Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex, int itemsPerPage)
             throws ServiceException;
+
+    Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable);
 
     SubscriptionDocument getSubscription(String userId, String companyNumber)
             throws ServiceException;

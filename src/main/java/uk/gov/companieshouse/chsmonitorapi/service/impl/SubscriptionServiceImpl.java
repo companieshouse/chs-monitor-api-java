@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
@@ -31,12 +32,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     @Override
     public Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex,
             int itemsPerPage) throws ServiceException {
-
         PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
+        return getSubscriptions(userId, pageRequest);
+    }
 
+    @Override
+    public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
         Page<SubscriptionDocument> pagedSubscriptions = mongoRepository.findSubscriptionsByUserId(
-                userId, pageRequest);
-
+                userId, pageable);
         if (pagedSubscriptions.get().findFirst().isEmpty()) {
             return pagedSubscriptions;
         }
@@ -46,7 +49,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
                     companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
                             .getCompanyName());
 
-            if (startIndex > pagedSubscriptions.getSize() - 1) {
+            if (pageable.getOffset() > pagedSubscriptions.getSize() - 1) {
                 throw new ArrayIndexOutOfBoundsException();
             }
         });
