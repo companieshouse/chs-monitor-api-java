@@ -22,7 +22,7 @@ public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocu
 
     void deleteAllByUserIdAndCompanyNumber(String userId, String companyNumber);
 
-    @Update("{ '$push' : { 'active' : ?2 } }")
-    void findAndPushActiveByUserIdAndCompanyNumber(String userId, String companyNumber,
+    @Update("{ '$set' : { 'active' : ?2 } }")
+    void findAndSetActiveByUserIdAndCompanyNumber(String userId, String companyNumber,
             boolean active);
 }

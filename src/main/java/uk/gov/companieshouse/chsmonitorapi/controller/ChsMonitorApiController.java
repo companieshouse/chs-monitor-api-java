@@ -1,8 +1,7 @@
 package uk.gov.companieshouse.chsmonitorapi.controller;
 
-import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLICATION_NAME_SPACE;
-
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -16,17 +15,18 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
 
 @RestController
-@RequestMapping("/")
+@RequestMapping("/following")
 @EnableSpringDataWebSupport
 public class ChsMonitorApiController {
 
@@ -45,7 +45,7 @@ public class ChsMonitorApiController {
         try {
             Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getSession().getId(), startIndex, itemsPerPage);
+                    request.getSession().getId(), pageable);
             // TODO: confirm if this is actually used by browsers / good practice
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
@@ -61,7 +61,7 @@ public class ChsMonitorApiController {
 
     @GetMapping("/{companyNumber}")
     public ResponseEntity<SubscriptionDocument> getSubscription(HttpServletRequest request,
-            @PathVariable("companyNumber") @NonNull String companyNumber) {
+            @PathVariable String companyNumber) {
         try {
             SubscriptionDocument subscription = subscriptionService.getSubscription(
                     request.getSession().getId(), companyNumber);
@@ -71,22 +71,24 @@ public class ChsMonitorApiController {
         }
     }
 
-    @PostMapping("/{companyNumber}")
+    @PostMapping
     public ResponseEntity<HttpStatus> createSubscription(HttpServletRequest request,
-            @PathVariable @NonNull String companyNumber) {
+            @Valid @RequestBody InputSubscription inputSubscription) {
         try {
-            subscriptionService.createSubscription(request.getSession().getId(), companyNumber);
+            subscriptionService.createSubscription(request.getSession().getId(),
+                    inputSubscription.getCompanyNumber());
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
         }
     }
 
-    @DeleteMapping("/{companyNumber}")
+    @DeleteMapping
     public ResponseEntity<HttpStatus> deleteSubscription(HttpServletRequest request,
-            @PathVariable @NonNull String companyNumber) {
+            @Valid @RequestBody InputSubscription inputSubscription) {
         try {
-            subscriptionService.deleteSubscription(request.getSession().getId(), companyNumber);
+            subscriptionService.deleteSubscription(request.getSession().getId(),
+                    inputSubscription.getCompanyNumber());
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();

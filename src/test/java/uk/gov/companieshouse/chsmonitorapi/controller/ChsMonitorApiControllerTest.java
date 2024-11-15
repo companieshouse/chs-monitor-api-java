@@ -1,6 +1,7 @@
 package uk.gov.companieshouse.chsmonitorapi.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
@@ -25,6 +26,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -128,9 +130,9 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyInt(), anyInt())).thenReturn(
+        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenReturn(
                 SUBSCRIPTIONS);
-        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
                 .queryParam("itemsPerPage", 10).encode().toUriString();
         mockMvc.perform(get(template)).andDo(print())
@@ -140,13 +142,13 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldFailWithNullValues() throws Exception {
-        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/")
                 .queryParam("startIndex", Optional.empty()).queryParam("itemsPerPage", 10).encode()
                 .toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
                 status().reason("Required parameter 'startIndex' is not present."));
 
-        template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+        template = UriComponentsBuilder.fromHttpUrl("http://localhost/")
                 .queryParam("startIndex", 0).queryParam("itemsPerPage", Optional.empty()).encode()
                 .toUriString();
         mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
@@ -156,10 +158,10 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnStatus416() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), anyInt(), anyInt())).thenThrow(
+        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenThrow(
                 new ArrayIndexOutOfBoundsException());
 
-        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/")
                 .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10)
                 .encode().toUriString();
         mockMvc.perform(get(template)).andDo(print())

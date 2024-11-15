@@ -90,9 +90,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void createSubscription(String userId, String companyNumber) throws ServiceException {
+        if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(userId,
+                companyNumber).isPresent()) {
+            throw new ServiceException("Active subscription already exists");
+        }
         if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(userId,
                 companyNumber).isPresent()) {
-            mongoRepository.findAndPushActiveByUserIdAndCompanyNumber(userId, companyNumber, true);
+            mongoRepository.findAndSetActiveByUserIdAndCompanyNumber(userId, companyNumber, true);
             return;
         }
         SubscriptionDocument subscriptionDocument = new SubscriptionDocument(userId, companyNumber,
@@ -102,6 +106,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void deleteSubscription(String userId, String companyNumber) throws ServiceException {
-        mongoRepository.findAndPushActiveByUserIdAndCompanyNumber(userId, companyNumber, false);
+        mongoRepository.findAndSetActiveByUserIdAndCompanyNumber(userId, companyNumber, false);
     }
 }
