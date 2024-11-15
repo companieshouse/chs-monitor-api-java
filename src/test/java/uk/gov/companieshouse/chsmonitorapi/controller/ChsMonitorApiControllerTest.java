@@ -33,6 +33,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
+import uk.gov.companieshouse.logging.Logger;
 
 @WebMvcTest(ChsMonitorApiController.class)
 @AutoConfigureMockMvc
@@ -53,6 +54,9 @@ class ChsMonitorApiControllerTest {
     private Page<SubscriptionDocument> SUBSCRIPTIONS;
     private String EXPECTED_RESPONSE;
     private String RESPONSE_JSON_OBJECT;
+
+    @MockBean
+    private Logger logger;
 
     @Autowired
     private MockMvc mockMvc;

@@ -30,12 +30,13 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 @EnableSpringDataWebSupport
 public class ChsMonitorApiController {
 
-    private static final Logger logger = LoggerFactory.getLogger(APPLICATION_NAME_SPACE);
+    private final Logger logger;
     private final SubscriptionService subscriptionService;
 
     @Autowired
-    public ChsMonitorApiController(SubscriptionService subscriptionService) {
+    public ChsMonitorApiController(SubscriptionService subscriptionService, Logger logger) {
         this.subscriptionService = subscriptionService;
+        this.logger = logger;
     }
 
     @GetMapping
