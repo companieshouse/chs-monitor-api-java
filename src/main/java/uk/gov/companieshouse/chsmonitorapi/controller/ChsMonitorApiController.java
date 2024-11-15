@@ -26,7 +26,6 @@ import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @RestController
-@RequestMapping("/following")
 @EnableSpringDataWebSupport
 public class ChsMonitorApiController {
 
