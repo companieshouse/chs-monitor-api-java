@@ -1,16 +1,21 @@
 package uk.gov.companieshouse.chsmonitorapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -142,6 +147,49 @@ class SubscriptionServiceTest {
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.get().findFirst().isEmpty());
+    }
+
+    @Test
+    void shouldReturnASubscription() throws ServiceException {
+        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(anyString(),
+                anyString())).thenReturn(Optional.of(
+                new SubscriptionDocument("userId", "companyNumber", "companyName", "query", true,
+                        NOW, NOW.minus(Period.ofDays(1)))));
+        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
+                new CompanyDetails("companyStatus", "companyName", "companyNumber"));
+
+        SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
+                "companyNumber");
+
+        assertTrue(subscriptionDocument.isActive());
+        assertEquals("companyNumber", subscriptionDocument.getCompanyNumber());
+    }
+
+    @Test
+    void shouldReturnAnEmptySubscription() throws ServiceException {
+        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(anyString(),
+                anyString())).thenReturn(Optional.empty());
+
+        SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
+                "companyNumber");
+        assertNull(subscriptionDocument.getCompanyNumber());
+    }
+
+    @Test
+    void shouldCreateASubscription() throws ServiceException {
+        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(anyString(),
+                anyString())).thenReturn(Optional.empty());
+        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(anyString(),
+                anyString())).thenReturn(Optional.empty());
+        subscriptionService.createSubscription("userId", "companyNumber");
+        verify(mongoRepository, times(1)).save(any());
+    }
+
+    @Test
+    void shouldDeleteASubscription() throws ServiceException {
+        subscriptionService.deleteSubscription("userId", "companyNumber");
+        verify(mongoRepository, times(1)).findAndSetActiveByUserIdAndCompanyNumber(anyString(),
+                anyString(), eq(false));
     }
 
     private boolean correctType(Object obj) {

@@ -79,7 +79,6 @@ class ChsMonitorApiControllerTest {
         assertThat(mockMvc).isNotNull();
     }
 
-    //    complaining about env vars now
     @Test
     @WithAnonymousUser
     void shouldBlockUnauthorizedCalls() throws Exception {
