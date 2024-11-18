@@ -14,12 +14,10 @@ import uk.gov.companieshouse.logging.Logger;
 @Service
 public class CompanyProfileServiceImpl implements CompanyProfileService {
 
-    private final ApiClientService apiClientService;
-
-    private final Logger logger;
-
     private static final UriTemplate GET_COMPANY_DETAILS_URI = new UriTemplate(
             "/company/{companyNumber}/company-detail");
+    private final ApiClientService apiClientService;
+    private final Logger logger;
 
     @Autowired
     public CompanyProfileServiceImpl(ApiClientService apiClientService, Logger logger) {
@@ -28,22 +26,22 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
     }
 
     @Override
-    public CompanyDetails getCompanyDetails(String companyNumber)
-            throws ServiceException {
+    public CompanyDetails getCompanyDetails(String companyNumber) throws ServiceException {
         var uri = GET_COMPANY_DETAILS_URI.expand(companyNumber).toString();
 
         try {
             CompanyDetails companyDetails = apiClientService.getInternalApiClient()
-                    .privateCompanyDetailResourceHandler()
-                    .getCompanyDetails(uri).execute().getData();
+                    .privateCompanyDetailResourceHandler().getCompanyDetails(uri).execute()
+                    .getData();
 
             if (companyDetails == null) {
+                logger.error("Company details not found for company number: " + companyNumber);
                 throw new ServiceException(
                         "Company details not found for company number: " + companyNumber);
             }
             return companyDetails;
         } catch (URIValidationException | IOException e) {
-            var message = "Error Retrieving Company Details: " + companyNumber;
+            var message = "Error Retrieving Company Details for company number: " + companyNumber;
             logger.error(message, e);
             throw new ServiceException(message, e);
         }

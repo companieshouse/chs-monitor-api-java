@@ -20,6 +20,20 @@ public class SubscriptionDocument {
     private LocalDateTime created;
     private LocalDateTime updated;
 
+    public SubscriptionDocument() {
+    }
+
+    public SubscriptionDocument(String userId, String companyNumber, String companyName,
+            String query, boolean active, LocalDateTime created, LocalDateTime updated) {
+        this.userId = userId;
+        this.companyNumber = companyNumber;
+        this.companyName = companyName;
+        this.query = query;
+        this.active = active;
+        this.created = created;
+        this.updated = updated;
+    }
+
     /**
      * Gets id.
      *

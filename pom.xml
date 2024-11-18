@@ -152,7 +152,7 @@
         <artifactId>spring-boot-maven-plugin</artifactId>
         <version>${spring-boot-maven-plugin.version}</version>
         <configuration>
-          <mainClass>uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.java
+          <mainClass>uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication
           </mainClass>
         </configuration>
         <executions>
@@ -240,5 +240,4 @@
       </plugin>
     </plugins>
   </build>
-
 </project>
