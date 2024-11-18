@@ -118,22 +118,14 @@ class ChsMonitorApiControllerTest {
                 """.formatted(TEST_ID, USER_ID, COMPANY_NUMBER, COMPANY_NAME, ACTIVE, CREATED);
 
         EXPECTED_RESPONSE_PAGED = """
-                {"content":
+                {"_embedded":{"subscriptionDocumentList":
                 [
                 %s,
                 %s,
                 %s
-                ],
-                "pageable":"INSTANCE",
-                "totalElements":3,
-                "last":true,
-                "totalPages":1,
-                "size":3,
-                "number":0,
-                "sort":{"empty":true,"unsorted":true,"sorted":false},
-                "numberOfElements":3,
-                "first":true,
-                "empty":false}
+                ]},
+                "_links":{"self":{"href":"http://localhost/following?companyNumber=1777777&startIndex=0&itemsPerPage=10"}},
+                "page":{"size":3,"totalElements":3,"totalPages":1,"number":0}}
                 """.formatted(EXPECTED_RESPONSE, EXPECTED_RESPONSE, EXPECTED_RESPONSE);
     }
 
@@ -145,6 +137,7 @@ class ChsMonitorApiControllerTest {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
                 .queryParam("itemsPerPage", 10).encode().toUriString();
+        System.out.println(EXPECTED_RESPONSE_PAGED);
         mockMvc.perform(get(template)).andDo(print())
                 .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE_PAGED));
     }

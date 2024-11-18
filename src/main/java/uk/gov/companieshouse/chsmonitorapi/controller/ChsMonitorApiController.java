@@ -6,7 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.hateoas.PagedModel;
+import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,8 +43,8 @@ public class ChsMonitorApiController {
     }
 
     @GetMapping
-    public ResponseEntity<Page<SubscriptionDocument>> getSubscriptions(HttpServletRequest request,
-            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage) {
+    public ResponseEntity<PagedModel<EntityModel<SubscriptionDocument>>> getSubscriptions(HttpServletRequest request,
+            @RequestParam @NonNull int startIndex, @RequestParam @NonNull int itemsPerPage, PagedResourcesAssembler<SubscriptionDocument> assembler) {
         try {
             Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
@@ -50,7 +53,7 @@ public class ChsMonitorApiController {
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
             headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));
-            return ResponseEntity.ok().headers(headers).body(subscriptions);
+            return ResponseEntity.ok().headers(headers).body(assembler.toModel(subscriptions));
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
         } catch (ServiceException exception) {
