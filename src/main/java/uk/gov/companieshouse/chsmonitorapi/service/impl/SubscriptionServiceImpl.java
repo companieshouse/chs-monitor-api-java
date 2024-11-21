@@ -60,10 +60,6 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscriptionDocument.setCompanyName(
                     companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
                             .getCompanyName());
-
-            if (pageable.getOffset() > pagedSubscriptions.getSize() - 1) {
-                throw new ArrayIndexOutOfBoundsException();
-            }
         });
 
         return pagedSubscriptions;

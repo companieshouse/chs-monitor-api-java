@@ -25,7 +25,8 @@ public class SecurityConfig {
     @Order(2)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return configureApiCsrfMitigations(http.addFilterBefore(new SessionHandler(),
-                BasicAuthenticationFilter.class)).build();
+        return configureApiCsrfMitigations(http
+//                .addFilterBefore(new SessionHandler(),BasicAuthenticationFilter.class)
+        ).build();
     }
 }

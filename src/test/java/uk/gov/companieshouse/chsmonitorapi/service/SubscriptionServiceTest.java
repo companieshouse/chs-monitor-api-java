@@ -109,30 +109,6 @@ class SubscriptionServiceTest {
     }
 
     @Test
-    void shouldThrowAnOutOfBoundsException() throws ServiceException {
-        List<SubscriptionDocument> subscriptionDocumentList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            subscriptionDocumentList.add(
-                    new SubscriptionDocument("userId", "companyNumber", "companyName", "query",
-                            true, NOW, NOW.minus(Period.ofDays(1))));
-        }
-
-        Pageable pageable = Pageable.unpaged();
-
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
-                subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
-
-        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
-                any(Pageable.class))).thenReturn(subscriptionDocumentPage);
-
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
-                new CompanyDetails("companyStatus", "companyName", "companyNumber"));
-
-        assertThrows(ArrayIndexOutOfBoundsException.class,
-                () -> subscriptionService.getSubscriptions("userId", 21, 5, ERIC_PASSTHROUGH));
-    }
-
-    @Test
     void shouldReturnAPageWithAnEmptyOptional() throws ServiceException {
 
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
