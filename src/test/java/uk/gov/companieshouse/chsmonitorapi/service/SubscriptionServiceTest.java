@@ -41,7 +41,7 @@ class SubscriptionServiceTest {
 
     private static final LocalDateTime NOW = LocalDateTime.now();
 
-    @MockBean
+    @MockBean(name = "filterChain")
     private SecurityFilterChain securityFilterChain;
 
     @MockBean
