@@ -8,14 +8,24 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import uk.gov.companieshouse.chsmonitorapi.logging.RequestLogInterceptor;
+import uk.gov.companieshouse.chsmonitorapi.interceptor.AuthenticationInterceptor;
+import uk.gov.companieshouse.environment.EnvironmentReader;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Configuration
 public class ApplicationConfig implements WebMvcConfigurer {
+        
+    private final AuthenticationInterceptor authenticationInterceptor;
+
+    @Autowired
+    public ApplicationConfig(AuthenticationInterceptor authenticationInterceptor) {
+        this.authenticationInterceptor = authenticationInterceptor;
+    }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
+        registry.addInterceptor(authenticationInterceptor);
         registry.addInterceptor(new RequestLogInterceptor(getLogger()));
     }
 
