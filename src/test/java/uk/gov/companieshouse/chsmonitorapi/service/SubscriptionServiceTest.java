@@ -40,8 +40,9 @@ import uk.gov.companieshouse.logging.Logger;
 class SubscriptionServiceTest {
 
     private static final LocalDateTime NOW = LocalDateTime.now();
+    private final String passThrough = "ERIC-PASSTHROUGH";
 
-    @MockBean
+    @MockBean(name = "filterChain")
     private SecurityFilterChain securityFilterChain;
 
     @MockBean
@@ -73,7 +74,7 @@ class SubscriptionServiceTest {
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                1);
+                1, passThrough);
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.stream().allMatch(this::correctType));
@@ -101,7 +102,7 @@ class SubscriptionServiceTest {
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                5);
+                5, passThrough);
 
         assertEquals(2, documentPage.getTotalPages());
         logger.info(documentPage.toString());
@@ -128,7 +129,7 @@ class SubscriptionServiceTest {
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         assertThrows(ArrayIndexOutOfBoundsException.class,
-                () -> subscriptionService.getSubscriptions("userId", 21, 5));
+                () -> subscriptionService.getSubscriptions("userId", 21, 5, passThrough));
     }
 
     @Test
@@ -140,10 +141,10 @@ class SubscriptionServiceTest {
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        subscriptionService.getSubscriptions("userId", 0, 5);
+        subscriptionService.getSubscriptions("userId", 0, 5, passThrough);
 
         Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                5);
+                5, passThrough);
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.get().findFirst().isEmpty());
@@ -159,7 +160,7 @@ class SubscriptionServiceTest {
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
-                "companyNumber");
+                "companyNumber", passThrough);
 
         assertTrue(subscriptionDocument.isActive());
         assertEquals("companyNumber", subscriptionDocument.getCompanyNumber());
@@ -171,7 +172,7 @@ class SubscriptionServiceTest {
                 anyString())).thenReturn(Optional.empty());
 
         SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
-                "companyNumber");
+                "companyNumber", passThrough);
         assertNull(subscriptionDocument.getCompanyNumber());
     }
 

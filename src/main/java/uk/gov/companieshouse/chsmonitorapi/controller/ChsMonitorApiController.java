@@ -4,7 +4,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PagedResourcesAssembler;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
@@ -13,14 +12,12 @@ import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
@@ -45,24 +42,23 @@ public class ChsMonitorApiController {
 
     @GetMapping
     public ResponseEntity<PagedModel<EntityModel<SubscriptionDocument>>> getSubscriptions(
-            HttpServletRequest request, @RequestParam @NonNull int startIndex,
-            @RequestParam @NonNull int itemsPerPage,
+            HttpServletRequest request, Pageable pageable,
             PagedResourcesAssembler<SubscriptionDocument> assembler) {
+
         try {
-            final var passthroughHeader = request.getHeader(
-                    ApiSdkManager.getEricPassthroughTokenHeader());
-            Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getSession().getId(), pageable, passthroughHeader);
-            // TODO: confirm if this is actually used by browsers / good practice
+                    request.getSession().getId(), pageable, getEricPassthroughHeader(request));
+
             HttpHeaders headers = new HttpHeaders();
-            headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
-            headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));
-            return ResponseEntity.ok().headers(headers).body(assembler.toModel(subscriptions));
+            headers.add("X-Page-Number", String.valueOf(pageable.getPageNumber()));
+            headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
+
+            PagedModel<EntityModel<SubscriptionDocument>> body = assembler.toModel(subscriptions);
+
+            return ResponseEntity.ok().headers(headers).body(body);
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
         } catch (ServiceException exception) {
-            // TODO: handle service exception
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -72,7 +68,7 @@ public class ChsMonitorApiController {
             @PathVariable String companyNumber) {
         try {
             SubscriptionDocument subscription = subscriptionService.getSubscription(
-                    request.getSession().getId(), companyNumber);
+                    request.getSession().getId(), companyNumber, getEricPassthroughHeader(request));
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -101,5 +97,9 @@ public class ChsMonitorApiController {
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    private String getEricPassthroughHeader(HttpServletRequest request) {
+        return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 }
