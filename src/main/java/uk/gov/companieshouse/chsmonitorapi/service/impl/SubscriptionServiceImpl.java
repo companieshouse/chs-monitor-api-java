@@ -41,13 +41,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex,
-            int itemsPerPage) throws ServiceException {
+            int itemsPerPage, String passthroughHeader) throws ServiceException {
         PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
-        return getSubscriptions(userId, pageRequest);
+        return getSubscriptions(userId, pageRequest, passthroughHeader);
     }
 
     @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
+    public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable,
+            String passthroughHeader) {
         Page<SubscriptionDocument> pagedSubscriptions =
                 mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 userId, pageable);
@@ -69,8 +70,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionDocument getSubscription(String userId, String companyNumber)
-            throws ServiceException {
+    public SubscriptionDocument getSubscription(String userId, String companyNumber,
+            String passthroughHeader) throws ServiceException {
         Optional<SubscriptionDocument> optionalSubscription =
                 mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);

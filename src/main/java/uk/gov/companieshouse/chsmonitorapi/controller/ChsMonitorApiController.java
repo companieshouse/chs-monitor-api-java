@@ -27,6 +27,7 @@ import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping("/following")
@@ -48,9 +49,11 @@ public class ChsMonitorApiController {
             @RequestParam @NonNull int itemsPerPage,
             PagedResourcesAssembler<SubscriptionDocument> assembler) {
         try {
+            final var passthroughHeader = request.getHeader(
+                    ApiSdkManager.getEricPassthroughTokenHeader());
             Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getSession().getId(), pageable);
+                    request.getSession().getId(), pageable, passthroughHeader);
             // TODO: confirm if this is actually used by browsers / good practice
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
