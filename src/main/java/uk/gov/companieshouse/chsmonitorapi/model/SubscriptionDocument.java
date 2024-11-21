@@ -34,6 +34,16 @@ public class SubscriptionDocument {
         this.updated = updated;
     }
 
+    public SubscriptionDocument(SubscriptionDocument subscriptionDocument) {
+        this.userId = subscriptionDocument.getUserId();
+        this.companyNumber = subscriptionDocument.getCompanyNumber();
+        this.companyName = subscriptionDocument.getCompanyName();
+        this.query = subscriptionDocument.getQuery();
+        this.active = subscriptionDocument.isActive();
+        this.created = subscriptionDocument.getCreated();
+        this.updated = subscriptionDocument.getUpdated();
+    }
+
     /**
      * Gets id.
      *
