@@ -4,6 +4,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.companieshouse.logging.Logger;
@@ -13,7 +14,6 @@ public class RequestLogInterceptor implements HandlerInterceptor, RequestLogger 
 
     private final Logger logger;
 
-    @Autowired
     public RequestLogInterceptor(Logger logger) {
         this.logger = logger;
     }
