@@ -1,5 +1,7 @@
 package uk.gov.companieshouse.chsmonitorapi.controller;
 
+import static uk.gov.companieshouse.chsmonitorapi.interceptor.AuthenticationInterceptor.ERIC_IDENTITY;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,8 +52,7 @@ public class ChsMonitorApiController {
         try {
             Pageable pageable = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getSession().getId(), pageable);
-            // TODO: confirm if this is actually used by browsers / good practice
+                    request.getHeader(ERIC_IDENTITY), pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(subscriptions.getNumber()));
             headers.add("X-Page-Size", String.valueOf(subscriptions.getSize()));
@@ -59,7 +60,6 @@ public class ChsMonitorApiController {
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
         } catch (ServiceException exception) {
-            // TODO: handle service exception
             return ResponseEntity.internalServerError().build();
         }
     }
@@ -69,7 +69,7 @@ public class ChsMonitorApiController {
             @PathVariable String companyNumber) {
         try {
             SubscriptionDocument subscription = subscriptionService.getSubscription(
-                    request.getSession().getId(), companyNumber);
+                    request.getHeader(ERIC_IDENTITY), companyNumber);
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -80,7 +80,7 @@ public class ChsMonitorApiController {
     public ResponseEntity<HttpStatus> createSubscription(HttpServletRequest request,
             @Valid @RequestBody InputSubscription inputSubscription) {
         try {
-            subscriptionService.createSubscription(request.getSession().getId(),
+            subscriptionService.createSubscription(request.getHeader(ERIC_IDENTITY),
                     inputSubscription.getCompanyNumber());
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
@@ -92,7 +92,7 @@ public class ChsMonitorApiController {
     public ResponseEntity<HttpStatus> deleteSubscription(HttpServletRequest request,
             @Valid @RequestBody InputSubscription inputSubscription) {
         try {
-            subscriptionService.deleteSubscription(request.getSession().getId(),
+            subscriptionService.deleteSubscription(request.getHeader(ERIC_IDENTITY),
                     inputSubscription.getCompanyNumber());
             return ResponseEntity.ok().build();
         } catch (ServiceException exception) {
