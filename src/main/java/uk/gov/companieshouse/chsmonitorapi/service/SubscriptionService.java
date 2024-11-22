@@ -13,23 +13,12 @@ public interface SubscriptionService {
     /**
      * Gets subscriptions.
      *
-     * @param userId       the user id
-     * @param startIndex   the start index
-     * @param itemsPerPage the items per page
-     * @return the subscriptions
-     * @throws ServiceException the service exception
-     */
-    Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex, int itemsPerPage)
-            throws ServiceException;
-
-    /**
-     * Gets subscriptions.
-     *
      * @param userId   the user id
      * @param pageable the pageable
      * @return the subscriptions
      */
-    Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable);
+    Page<SubscriptionDocument> getSubscriptions(String userId,
+            String passthroughHeader, Pageable pageable);
 
     /**
      * Gets subscription.
@@ -39,8 +28,8 @@ public interface SubscriptionService {
      * @return the subscription
      * @throws ServiceException the service exception
      */
-    SubscriptionDocument getSubscription(String userId, String companyNumber)
-            throws ServiceException;
+    SubscriptionDocument getSubscription(String userId, String companyNumber,
+            String passthroughHeader) throws ServiceException;
 
     /**
      * Create subscription.

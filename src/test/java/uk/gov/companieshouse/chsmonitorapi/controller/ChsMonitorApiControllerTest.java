@@ -3,6 +3,7 @@ package uk.gov.companieshouse.chsmonitorapi.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -18,7 +19,6 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,6 +41,7 @@ import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @WebMvcTest(ChsMonitorApiController.class)
 @AutoConfigureMockMvc
@@ -53,6 +54,7 @@ class ChsMonitorApiControllerTest {
     private final String COMPANY_NAME = "12345678";
     private final String COMPANY_NUMBER = "TEST_COMPANY";
     private final String USER_ID = "TEST_USER";
+    private final String ERIC_PASSTHROUGH = "ERIC_PASSTHROUGH_TOKEN";
     // If you run this at exactly HH:MM:00 it cuts off the seconds and fails lol
     private final LocalDateTime NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     private final SubscriptionDocument ACTIVE_SUBSCRIPTION = new SubscriptionDocument();
@@ -124,7 +126,7 @@ class ChsMonitorApiControllerTest {
                 %s,
                 %s
                 ]},
-                "_links":{"self":{"href":"http://localhost/following?companyNumber=1777777&startIndex=0&itemsPerPage=10"}},
+                "_links":{"self":{"href":"http://localhost/following?companyNumber=1777777&number=0&size=10"}},
                 "page":{"size":3,"totalElements":3,"totalPages":1,"number":0}}
                 """.formatted(EXPECTED_RESPONSE, EXPECTED_RESPONSE, EXPECTED_RESPONSE);
     }
@@ -132,54 +134,40 @@ class ChsMonitorApiControllerTest {
     @Test
     @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenReturn(
-                SUBSCRIPTIONS);
+        when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
+                any(Pageable.class))).thenReturn(SUBSCRIPTIONS);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("startIndex", 0)
-                .queryParam("itemsPerPage", 10).encode().toUriString();
-        System.out.println(EXPECTED_RESPONSE_PAGED);
-        mockMvc.perform(get(template)).andDo(print())
+                .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("number", 0)
+                .queryParam("size", 10).encode().toUriString();
+        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
+                        ERIC_PASSTHROUGH)).andDo(print())
                 .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE_PAGED));
     }
 
     @Test
     @WithMockUser
-    void shouldFailWithNullValues() throws Exception {
-        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("startIndex", Optional.empty()).queryParam("itemsPerPage", 10).encode()
-                .toUriString();
-        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
-                status().reason("Required parameter 'startIndex' is not present."));
-
-        template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("startIndex", 0).queryParam("itemsPerPage", Optional.empty()).encode()
-                .toUriString();
-        mockMvc.perform(get(template)).andDo(print()).andExpectAll(status().isBadRequest(),
-                status().reason("Required parameter 'itemsPerPage' is not present."));
-    }
-
-    @Test
-    @WithMockUser
     void shouldReturnStatus416() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenThrow(
-                new ArrayIndexOutOfBoundsException());
+        when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
+                any(Pageable.class))).thenThrow(new ArrayIndexOutOfBoundsException());
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("startIndex", Integer.MAX_VALUE - 10).queryParam("itemsPerPage", 10)
-                .encode().toUriString();
-        mockMvc.perform(get(template)).andDo(print())
+                .queryParam("size", Integer.MAX_VALUE - 10).queryParam("number", 10).encode()
+                .toUriString();
+        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
+                        ERIC_PASSTHROUGH)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
     }
 
     @Test
     @WithMockUser
     void shouldReturnSubscription() throws Exception {
-        when(subscriptionService.getSubscription(anyString(), anyString())).thenReturn(
-                ACTIVE_SUBSCRIPTION);
+        when(subscriptionService.getSubscription(anyString(), anyString(),
+                eq(ERIC_PASSTHROUGH))).thenReturn(ACTIVE_SUBSCRIPTION);
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
-        mockMvc.perform(get(template)).andDo(print()).andExpect(status().isOk())
+        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
+                        ERIC_PASSTHROUGH)).andDo(print()).andExpect(status().isOk())
                 .andExpect(content().json(EXPECTED_RESPONSE));
     }
 
@@ -193,13 +181,14 @@ class ChsMonitorApiControllerTest {
                 .content(objectMapper.writeValueAsString(deletePayload))
                 .contentType(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
 
-        when(subscriptionService.getSubscription(anyString(), anyString())).thenThrow(
-                new ServiceException("Not found"));
+        when(subscriptionService.getSubscription(anyString(), anyString(),
+                eq(ERIC_PASSTHROUGH))).thenThrow(new ServiceException("Not found"));
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
 
-        mockMvc.perform(get(template)).andDo(print()).andExpect(status().isInternalServerError());
+        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
+                ERIC_PASSTHROUGH)).andDo(print()).andExpect(status().isInternalServerError());
     }
 
     @Test

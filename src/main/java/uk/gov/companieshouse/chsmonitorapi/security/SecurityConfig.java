@@ -18,13 +18,15 @@ public class SecurityConfig {
     @Order(1)
     @Bean
     public SecurityFilterChain healthCheckFilterChain(HttpSecurity http) throws Exception {
-        return http.securityMatcher("/chs-monitor-api/healthcheck").build();
+        return configureApiCsrfMitigations(
+                http.securityMatcher("/chs-monitor-api/healthcheck")).build();
     }
 
     @Order(2)
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        return configureApiCsrfMitigations(http.addFilterBefore(new SessionHandler(),
-                BasicAuthenticationFilter.class)).build();
+        return configureApiCsrfMitigations(http
+//                .addFilterBefore(new SessionHandler(),BasicAuthenticationFilter.class)
+        ).build();
     }
 }

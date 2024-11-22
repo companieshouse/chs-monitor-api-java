@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
@@ -40,14 +39,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId, int startIndex,
-            int itemsPerPage) throws ServiceException {
-        PageRequest pageRequest = PageRequest.of(startIndex / itemsPerPage, itemsPerPage);
-        return getSubscriptions(userId, pageRequest);
-    }
-
-    @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
+    public Page<SubscriptionDocument> getSubscriptions(String userId, String passthroughHeader,
+            Pageable pageable) {
         Page<SubscriptionDocument> pagedSubscriptions =
                 mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 userId, pageable);
@@ -59,18 +52,14 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             subscriptionDocument.setCompanyName(
                     companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
                             .getCompanyName());
-
-            if (pageable.getOffset() > pagedSubscriptions.getSize() - 1) {
-                throw new ArrayIndexOutOfBoundsException();
-            }
         });
 
         return pagedSubscriptions;
     }
 
     @Override
-    public SubscriptionDocument getSubscription(String userId, String companyNumber)
-            throws ServiceException {
+    public SubscriptionDocument getSubscription(String userId, String companyNumber,
+            String passthroughHeader) throws ServiceException {
         Optional<SubscriptionDocument> optionalSubscription =
                 mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);

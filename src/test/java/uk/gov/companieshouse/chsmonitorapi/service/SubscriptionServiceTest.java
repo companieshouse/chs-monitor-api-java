@@ -2,7 +2,6 @@ package uk.gov.companieshouse.chsmonitorapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -23,6 +22,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -40,6 +40,7 @@ import uk.gov.companieshouse.logging.Logger;
 class SubscriptionServiceTest {
 
     private static final LocalDateTime NOW = LocalDateTime.now();
+    private final String ERIC_PASSTHROUGH = "ERIC_PASSTHROUGH_TOKEN";
 
     @MockBean(name = "filterChain")
     private SecurityFilterChain securityFilterChain;
@@ -72,8 +73,8 @@ class SubscriptionServiceTest {
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                1);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
+                ERIC_PASSTHROUGH, PageRequest.of(0, 5));
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.stream().allMatch(this::correctType));
@@ -100,35 +101,11 @@ class SubscriptionServiceTest {
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                5);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
+                ERIC_PASSTHROUGH, PageRequest.of(0, 5));
 
         assertEquals(2, documentPage.getTotalPages());
         logger.info(documentPage.toString());
-    }
-
-    @Test
-    void shouldThrowAnOutOfBoundsException() throws ServiceException {
-        List<SubscriptionDocument> subscriptionDocumentList = new ArrayList<>();
-        for (int i = 0; i < 10; i++) {
-            subscriptionDocumentList.add(
-                    new SubscriptionDocument("userId", "companyNumber", "companyName", "query",
-                            true, NOW, NOW.minus(Period.ofDays(1))));
-        }
-
-        Pageable pageable = Pageable.unpaged();
-
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
-                subscriptionDocumentList.subList(0, 5), pageable, subscriptionDocumentList.size());
-
-        when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
-                any(Pageable.class))).thenReturn(subscriptionDocumentPage);
-
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
-                new CompanyDetails("companyStatus", "companyName", "companyNumber"));
-
-        assertThrows(ArrayIndexOutOfBoundsException.class,
-                () -> subscriptionService.getSubscriptions("userId", 21, 5));
     }
 
     @Test
@@ -140,10 +117,10 @@ class SubscriptionServiceTest {
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
-        subscriptionService.getSubscriptions("userId", 0, 5);
+        subscriptionService.getSubscriptions("userId", ERIC_PASSTHROUGH, PageRequest.of(0, 5));
 
-        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId", 0,
-                5);
+        Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
+                ERIC_PASSTHROUGH, PageRequest.of(0, 5));
 
         assertEquals(1, documentPage.getTotalPages());
         assertTrue(documentPage.get().findFirst().isEmpty());
@@ -159,7 +136,7 @@ class SubscriptionServiceTest {
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
-                "companyNumber");
+                "companyNumber", ERIC_PASSTHROUGH);
 
         assertTrue(subscriptionDocument.isActive());
         assertEquals("companyNumber", subscriptionDocument.getCompanyNumber());
@@ -171,7 +148,7 @@ class SubscriptionServiceTest {
                 anyString())).thenReturn(Optional.empty());
 
         SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",
-                "companyNumber");
+                "companyNumber", ERIC_PASSTHROUGH);
         assertNull(subscriptionDocument.getCompanyNumber());
     }
 
