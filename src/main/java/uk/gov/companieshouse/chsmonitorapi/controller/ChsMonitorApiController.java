@@ -55,7 +55,6 @@ public class ChsMonitorApiController {
             headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
 
             PagedModel<EntityModel<SubscriptionDocument>> body = assembler.toModel(subscriptions);
-
             return ResponseEntity.ok().headers(headers).body(body);
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();

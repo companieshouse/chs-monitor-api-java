@@ -81,13 +81,24 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     public void createSubscription(String userId, String companyNumber) throws ServiceException {
         if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(userId,
                 companyNumber).isPresent()) {
-            throw new ServiceException("Active subscription already exists");
+            String exceptionMessage = String.format(
+                    "Active subscription already exists for userId: %s companyNumber: %s", userId,
+                    companyNumber);
+            ServiceException exception = new ServiceException(exceptionMessage);
+            logger.error(exceptionMessage, exception);
+            throw exception;
         }
         if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(userId,
                 companyNumber).isPresent()) {
+            logger.debug(String.format(
+                    "Inactive subscription exists for userId: %s companyNumber: %s, toggling it "
+                            + "to active", userId, companyNumber));
             mongoRepository.findAndSetActiveByUserIdAndCompanyNumber(userId, companyNumber, true);
             return;
         }
+        logger.debug(
+                String.format("Creating new subscription for userId: %s companyNumber: %s", userId,
+                        companyNumber));
         SubscriptionDocument subscriptionDocument = new SubscriptionDocument(userId, companyNumber,
                 null, null, true, LocalDateTime.now(), LocalDateTime.now());
         mongoRepository.save(subscriptionDocument);
@@ -95,6 +106,18 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void deleteSubscription(String userId, String companyNumber) throws ServiceException {
+        if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(userId,
+                companyNumber).isEmpty()) {
+            String exceptionMessage = String.format(
+                    "No subscription exists for userId: %s companyNumber: %s", userId,
+                    companyNumber);
+            ServiceException exception = new ServiceException(exceptionMessage);
+            logger.error(exceptionMessage, exception);
+            throw exception;
+        }
+        logger.debug(String.format(
+                "Active subscription exists for userId: %s companyNumber: %s, toggling it "
+                        + "to inactive", userId, companyNumber));
         mongoRepository.findAndSetActiveByUserIdAndCompanyNumber(userId, companyNumber, false);
     }
 }
