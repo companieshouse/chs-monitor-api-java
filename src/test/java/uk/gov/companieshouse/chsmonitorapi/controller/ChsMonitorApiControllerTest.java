@@ -26,19 +26,23 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.config.EnableSpringDataWebSupport;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithAnonymousUser;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.util.UriComponentsBuilder;
+import uk.gov.companieshouse.chsmonitorapi.config.LoggingConfig;
+import uk.gov.companieshouse.chsmonitorapi.config.WebMvcConfig;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.interceptor.AuthenticationInterceptor;
 import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
+import uk.gov.companieshouse.chsmonitorapi.security.SecurityConfig;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
@@ -47,6 +51,8 @@ import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 @AutoConfigureMockMvc
 @ExtendWith(SpringExtension.class)
 @EnableSpringDataWebSupport
+@Import({LoggingConfig.class, WebMvcConfig.class, AuthenticationInterceptor.class,
+        SecurityConfig.class})
 class ChsMonitorApiControllerTest {
 
     private final String TEST_COMPANY_NUMBER = "1777777";
@@ -55,6 +61,9 @@ class ChsMonitorApiControllerTest {
     private final String COMPANY_NUMBER = "TEST_COMPANY";
     private final String USER_ID = "TEST_USER";
     private final String ERIC_PASSTHROUGH = "ERIC_PASSTHROUGH_TOKEN";
+    private final String ERIC_IDENTITY = "ERIC-Identity";
+    private final String ERIC_IDENTITY_TYPE = "ERIC-Identity-Type";
+    private final String ERIC_IDENTITY_TYPE_VALUE = "key";
     // If you run this at exactly HH:MM:00 it cuts off the seconds and fails lol
     private final LocalDateTime NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
     private final SubscriptionDocument ACTIVE_SUBSCRIPTION = new SubscriptionDocument();
@@ -66,7 +75,7 @@ class ChsMonitorApiControllerTest {
     private String EXPECTED_RESPONSE_PAGED;
     private String EXPECTED_RESPONSE;
 
-    @MockBean
+    @Autowired
     private Logger logger;
 
     @Autowired
@@ -88,9 +97,9 @@ class ChsMonitorApiControllerTest {
         mockMvc.perform(get("/" + TEST_COMPANY_NUMBER)).andDo(print())
                 .andExpect(status().isUnauthorized());
         mockMvc.perform(post("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
         mockMvc.perform(delete("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                .andExpect(status().isForbidden());
+                .andExpect(status().isUnauthorized());
     }
 
     @BeforeEach
@@ -132,7 +141,6 @@ class ChsMonitorApiControllerTest {
     }
 
     @Test
-    @WithMockUser
     void shouldReturnListOfSubscriptions() throws Exception {
         when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
                 any(Pageable.class))).thenReturn(SUBSCRIPTIONS);
@@ -140,12 +148,12 @@ class ChsMonitorApiControllerTest {
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("number", 0)
                 .queryParam("size", 10).encode().toUriString();
         mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                        ERIC_PASSTHROUGH)).andDo(print())
+                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE_PAGED));
     }
 
     @Test
-    @WithMockUser
     void shouldReturnStatus416() throws Exception {
         when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
                 any(Pageable.class))).thenThrow(new ArrayIndexOutOfBoundsException());
@@ -154,12 +162,12 @@ class ChsMonitorApiControllerTest {
                 .queryParam("size", Integer.MAX_VALUE - 10).queryParam("number", 10).encode()
                 .toUriString();
         mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                        ERIC_PASSTHROUGH)).andDo(print())
+                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
     }
 
     @Test
-    @WithMockUser
     void shouldReturnSubscription() throws Exception {
         when(subscriptionService.getSubscription(anyString(), anyString(),
                 eq(ERIC_PASSTHROUGH))).thenReturn(ACTIVE_SUBSCRIPTION);
@@ -167,17 +175,19 @@ class ChsMonitorApiControllerTest {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
         mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                        ERIC_PASSTHROUGH)).andDo(print()).andExpect(status().isOk())
-                .andExpect(content().json(EXPECTED_RESPONSE));
+                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+                .andExpect(status().isOk()).andExpect(content().json(EXPECTED_RESPONSE));
     }
 
     @Test
-    @WithMockUser
     void shouldDeleteSubscription() throws Exception {
         InputSubscription deletePayload = new InputSubscription("1777777");
         ObjectMapper objectMapper = new ObjectMapper();
 
         mockMvc.perform(delete("http://localhost/following").with(csrf())
+                .header(ERIC_IDENTITY, ERIC_IDENTITY)
+                .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
                 .content(objectMapper.writeValueAsString(deletePayload))
                 .contentType(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
 
@@ -187,12 +197,13 @@ class ChsMonitorApiControllerTest {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
 
-        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                ERIC_PASSTHROUGH)).andDo(print()).andExpect(status().isInternalServerError());
+        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
+                        .header(ApiSdkManager.getEricPassthroughTokenHeader(), ERIC_PASSTHROUGH))
+                .andDo(print()).andExpect(status().isInternalServerError());
     }
 
     @Test
-    @WithMockUser
     void shouldFailToDeleteSubscription() throws Exception {
         InputSubscription deletePayload = new InputSubscription("1777777");
         ObjectMapper objectMapper = new ObjectMapper();
@@ -201,6 +212,8 @@ class ChsMonitorApiControllerTest {
                 .deleteSubscription(anyString(), anyString());
 
         mockMvc.perform(delete("http://localhost/following").with(csrf())
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY).header(ERIC_IDENTITY_TYPE,
+                                ERIC_IDENTITY_TYPE_VALUE)
                         .content(objectMapper.writeValueAsString(deletePayload))
                         .contentType(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isInternalServerError());
@@ -208,11 +221,11 @@ class ChsMonitorApiControllerTest {
     }
 
     @Test
-    @WithMockUser
     void shouldCreateSubscription() throws Exception {
         InputSubscription createPayload = new InputSubscription("1777777");
         ObjectMapper objectMapper = new ObjectMapper();
-        mockMvc.perform(post("http://localhost/following").with(csrf())
+        mockMvc.perform(post("http://localhost/following").header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createPayload)))
                 .andExpect(status().isOk());

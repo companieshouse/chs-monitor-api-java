@@ -34,25 +34,9 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             return false;
         }
 
-//        if (!isKeyAuthorised(request, identityType)) {
-//            logger.errorRequest(request,
-//                    "Supplied key does not have sufficient privilege for the action",
-//                    new DataMap.Builder().build().getLogMap());
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return false;
-//        }
-
         logger.debugRequest(request, "User authenticated", new DataMap.Builder().build().getLogMap());
         return true;
     }
-
-//    private boolean isKeyAuthorised(HttpServletRequest request, String ericIdentityType) {
-//        String[] privileges = authenticationHelper.getApiKeyPrivileges(request);
-//
-//        return HttpMethod.GET.matches(request.getMethod()) || (
-//                "key".equalsIgnoreCase(ericIdentityType) && ArrayUtils.contains(privileges,
-//                        "internal-app"));
-//    }
 
     private boolean isInvalidIdentityType(String identityType) {
         return !("key".equalsIgnoreCase(identityType) || "oauth2".equalsIgnoreCase(identityType));
