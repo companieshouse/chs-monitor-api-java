@@ -26,11 +26,11 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
     }
 
     @Override
-    public CompanyDetails getCompanyDetails(String companyNumber, String passthrough) throws ServiceException {
+    public CompanyDetails getCompanyDetails(String companyNumber, String passthroughHeader) throws ServiceException {
         var uri = GET_COMPANY_DETAILS_URI.expand(companyNumber).toString();
 
         try {
-            CompanyDetails companyDetails = apiClientService.getInternalApiClient(passthrough)
+            CompanyDetails companyDetails = apiClientService.getInternalApiClient(passthroughHeader)
                     .privateCompanyDetailResourceHandler().getCompanyDetails(uri).execute()
                     .getData();
 

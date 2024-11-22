@@ -7,6 +7,6 @@ import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
 
 public interface CompanyProfileService {
 
-    CompanyDetails getCompanyDetails(String companyNumber, String passthrough)
+    CompanyDetails getCompanyDetails(String companyNumber, String passthroughHeader)
             throws ServiceException;
 }
