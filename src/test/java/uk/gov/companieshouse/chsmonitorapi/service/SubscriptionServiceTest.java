@@ -70,7 +70,7 @@ class SubscriptionServiceTest {
                 List.of(subscriptionDocument));
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
+        when(companyProfileService.getCompanyDetails(anyString(), anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
@@ -98,7 +98,7 @@ class SubscriptionServiceTest {
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
 
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
+        when(companyProfileService.getCompanyDetails(anyString(), anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         Page<SubscriptionDocument> documentPage = subscriptionService.getSubscriptions("userId",
@@ -114,7 +114,7 @@ class SubscriptionServiceTest {
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(Page.empty());
 
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
+        when(companyProfileService.getCompanyDetails(anyString(), anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         subscriptionService.getSubscriptions("userId", ERIC_PASSTHROUGH, PageRequest.of(0, 5));
@@ -132,7 +132,7 @@ class SubscriptionServiceTest {
                 anyString())).thenReturn(Optional.of(
                 new SubscriptionDocument("userId", "companyNumber", "companyName", "query", true,
                         NOW, NOW.minus(Period.ofDays(1)))));
-        when(companyProfileService.getCompanyDetails(anyString())).thenReturn(
+        when(companyProfileService.getCompanyDetails(anyString(), anyString())).thenReturn(
                 new CompanyDetails("companyStatus", "companyName", "companyNumber"));
 
         SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription("userId",

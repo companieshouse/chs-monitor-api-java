@@ -50,8 +50,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         pagedSubscriptions.forEach(subscriptionDocument -> {
             subscriptionDocument.setCompanyName(
-                    companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
-                            .getCompanyName());
+                    companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber(),
+                            passthroughHeader).getCompanyName());
         });
 
         return pagedSubscriptions;
@@ -72,8 +72,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         SubscriptionDocument subscription = optionalSubscription.get();
 
         subscription.setCompanyName(
-                companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
-                        .getCompanyName());
+                companyProfileService.getCompanyDetails(subscription.getCompanyNumber(),
+                        passthroughHeader).getCompanyName());
         return subscription;
     }
 
