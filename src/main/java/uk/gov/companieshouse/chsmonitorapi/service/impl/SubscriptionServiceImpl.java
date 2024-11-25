@@ -39,8 +39,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId,
-            Pageable pageable) {
+    public Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable) {
         Page<SubscriptionDocument> pagedSubscriptions =
                 mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 userId, pageable);
@@ -58,7 +57,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public SubscriptionDocument getSubscription(String userId, String companyNumber) throws ServiceException {
+    public SubscriptionDocument getSubscription(String userId, String companyNumber)
+            throws ServiceException {
         Optional<SubscriptionDocument> optionalSubscription =
                 mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);
@@ -71,7 +71,8 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         SubscriptionDocument subscription = optionalSubscription.get();
 
         subscription.setCompanyName(
-                companyProfileService.getCompanyDetails(subscription.getCompanyNumber()).getCompanyName());
+                companyProfileService.getCompanyDetails(subscription.getCompanyNumber())
+                        .getCompanyName());
         return subscription;
     }
 
@@ -104,15 +105,19 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public void deleteSubscription(String userId, String companyNumber) throws ServiceException {
-        if (mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(userId,
-                companyNumber).isEmpty()) {
+        Optional<SubscriptionDocument> subscription =
+                mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
+                userId, companyNumber);
+
+        if (subscription.isEmpty()) {
             String exceptionMessage = String.format(
-                    "No subscription exists for userId: %s companyNumber: %s", userId,
+                    "No active subscription exists for userId: %s companyNumber: %s", userId,
                     companyNumber);
             ServiceException exception = new ServiceException(exceptionMessage);
             logger.error(exceptionMessage, exception);
             throw exception;
         }
+
         logger.debug(String.format(
                 "Active subscription exists for userId: %s companyNumber: %s, toggling it "
                         + "to inactive", userId, companyNumber));
