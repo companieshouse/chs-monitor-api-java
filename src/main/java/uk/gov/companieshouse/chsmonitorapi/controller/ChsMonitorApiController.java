@@ -49,7 +49,7 @@ public class ChsMonitorApiController {
 
         try {
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getHeader(ERIC_IDENTITY), getEricPassthroughHeader(request), pageable);
+                    request.getHeader(ERIC_IDENTITY), pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(pageable.getPageNumber()));
             headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
@@ -68,8 +68,7 @@ public class ChsMonitorApiController {
             @PathVariable String companyNumber) {
         try {
             SubscriptionDocument subscription = subscriptionService.getSubscription(
-                    request.getHeader(ERIC_IDENTITY), companyNumber,
-                    getEricPassthroughHeader(request));
+                    request.getHeader(ERIC_IDENTITY), companyNumber);
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -98,9 +97,5 @@ public class ChsMonitorApiController {
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    private String getEricPassthroughHeader(HttpServletRequest request) {
-        return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 }

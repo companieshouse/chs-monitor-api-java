@@ -39,7 +39,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
     }
 
     @Override
-    public Page<SubscriptionDocument> getSubscriptions(String userId, String passthroughHeader,
+    public Page<SubscriptionDocument> getSubscriptions(String userId,
             Pageable pageable) {
         Page<SubscriptionDocument> pagedSubscriptions =
                 mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
@@ -50,16 +50,15 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
         pagedSubscriptions.forEach(subscriptionDocument -> {
             subscriptionDocument.setCompanyName(
-                    companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber(),
-                            passthroughHeader).getCompanyName());
+                    companyProfileService.getCompanyDetails(subscriptionDocument.getCompanyNumber())
+                            .getCompanyName());
         });
 
         return pagedSubscriptions;
     }
 
     @Override
-    public SubscriptionDocument getSubscription(String userId, String companyNumber,
-            String passthroughHeader) throws ServiceException {
+    public SubscriptionDocument getSubscription(String userId, String companyNumber) throws ServiceException {
         Optional<SubscriptionDocument> optionalSubscription =
                 mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);
@@ -72,8 +71,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
         SubscriptionDocument subscription = optionalSubscription.get();
 
         subscription.setCompanyName(
-                companyProfileService.getCompanyDetails(subscription.getCompanyNumber(),
-                        passthroughHeader).getCompanyName());
+                companyProfileService.getCompanyDetails(subscription.getCompanyNumber()).getCompanyName());
         return subscription;
     }
 
