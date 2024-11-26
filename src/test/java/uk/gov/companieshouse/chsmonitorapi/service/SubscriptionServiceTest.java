@@ -1,7 +1,7 @@
 package uk.gov.companieshouse.chsmonitorapi.service;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -29,6 +29,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import uk.gov.companieshouse.api.model.company.CompanyProfileApi;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.exception.SubscriptionNotFound;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.repository.MonitorMongoRepository;
 import uk.gov.companieshouse.chsmonitorapi.service.impl.CompanyProfileServiceImpl;
@@ -81,11 +82,11 @@ class SubscriptionServiceTest {
     @Test
     void shouldReturnSinglePageOfSubscriptionDocuments() throws ServiceException {
 
-        SubscriptionDocument subscriptionDocument = new SubscriptionDocument(USER_ID,
+        SubscriptionDocument subDoc = new SubscriptionDocument(USER_ID,
                 COMPANY_NUMBER, COMPANY_NAME, QUERY, ACTIVE, NOW, NOW.minus(Period.ofDays(1)));
 
         Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
-                List.of(subscriptionDocument));
+                List.of(subDoc));
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(companyProfileApi);
@@ -145,11 +146,11 @@ class SubscriptionServiceTest {
                 anyString())).thenReturn(Optional.of(subscriptionDocument));
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(companyProfileApi);
 
-        SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription(USER_ID,
+        SubscriptionDocument subDoc = subscriptionService.getSubscription(USER_ID,
                 COMPANY_NUMBER);
 
-        assertTrue(subscriptionDocument.isActive());
-        assertEquals(COMPANY_NUMBER, subscriptionDocument.getCompanyNumber());
+        assertTrue(subDoc.isActive());
+        assertEquals(COMPANY_NUMBER, subDoc.getCompanyNumber());
     }
 
     @Test
@@ -157,9 +158,8 @@ class SubscriptionServiceTest {
         when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(anyString(),
                 anyString())).thenReturn(Optional.empty());
 
-        SubscriptionDocument subscriptionDocument = subscriptionService.getSubscription(USER_ID,
-                COMPANY_NUMBER);
-        assertNull(subscriptionDocument.getCompanyNumber());
+        assertThrows(SubscriptionNotFound.class,
+                () -> subscriptionService.getSubscription(USER_ID, COMPANY_NUMBER));
     }
 
     @Test
@@ -174,7 +174,7 @@ class SubscriptionServiceTest {
 
     @Test
     void shouldDeleteASubscription() throws ServiceException {
-        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(eq(USER_ID),
+        when(mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(eq(USER_ID),
                 eq(COMPANY_NUMBER))).thenReturn(Optional.of(subscriptionDocument));
         subscriptionService.deleteSubscription(USER_ID, COMPANY_NUMBER);
         verify(mongoRepository, times(1)).findAndSetActiveByUserIdAndCompanyNumber(anyString(),
