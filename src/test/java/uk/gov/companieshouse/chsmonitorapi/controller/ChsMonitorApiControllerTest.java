@@ -38,6 +38,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import uk.gov.companieshouse.chsmonitorapi.config.LoggingConfig;
 import uk.gov.companieshouse.chsmonitorapi.config.WebMvcConfig;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.exception.SubscriptionNotFound;
 import uk.gov.companieshouse.chsmonitorapi.interceptor.AuthenticationInterceptor;
 import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
@@ -160,6 +161,18 @@ class ChsMonitorApiControllerTest {
         mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
+    }
+
+    @Test
+    void shouldReturnStatus404() throws Exception {
+        when(subscriptionService.getSubscription(anyString(), anyString())).thenThrow(
+                new SubscriptionNotFound("companyName", "userId"));
+
+        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/companyNumber")
+                .toUriString();
+        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+                .andExpect(status().isNotFound());
     }
 
     @Test
