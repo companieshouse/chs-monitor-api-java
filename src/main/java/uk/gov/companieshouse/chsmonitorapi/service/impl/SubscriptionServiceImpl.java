@@ -7,6 +7,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.exception.SubscriptionNotFound;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.repository.MonitorMongoRepository;
 import uk.gov.companieshouse.chsmonitorapi.service.CompanyProfileService;
@@ -58,14 +59,13 @@ public class SubscriptionServiceImpl implements SubscriptionService {
 
     @Override
     public SubscriptionDocument getSubscription(String userId, String companyNumber)
-            throws ServiceException {
+            throws ServiceException, SubscriptionNotFound {
         Optional<SubscriptionDocument> optionalSubscription =
                 mongoRepository.findSubscriptionByUserIdAndCompanyNumberAndActiveIsTrue(
                 userId, companyNumber);
 
         if (optionalSubscription.isEmpty()) {
-            // TODO: confirm this works the same on the FE as returning nil in the golang service
-            return new SubscriptionDocument();
+            throw new SubscriptionNotFound(userId, companyNumber);
         }
 
         SubscriptionDocument subscription = optionalSubscription.get();
@@ -113,7 +113,7 @@ public class SubscriptionServiceImpl implements SubscriptionService {
             String exceptionMessage = String.format(
                     "No active subscription exists for userId: %s companyNumber: %s", userId,
                     companyNumber);
-            ServiceException exception = new ServiceException(exceptionMessage);
+            SubscriptionNotFound exception = new SubscriptionNotFound(companyNumber, userId);
             logger.error(exceptionMessage, exception);
             throw exception;
         }

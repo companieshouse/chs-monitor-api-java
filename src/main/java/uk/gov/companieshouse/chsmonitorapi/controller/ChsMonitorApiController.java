@@ -13,7 +13,6 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -23,11 +22,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.gov.companieshouse.chsmonitorapi.exception.ServiceException;
+import uk.gov.companieshouse.chsmonitorapi.exception.SubscriptionNotFound;
 import uk.gov.companieshouse.chsmonitorapi.model.InputSubscription;
 import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @RestController
 @RequestMapping("/following")
@@ -73,6 +72,8 @@ public class ChsMonitorApiController {
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
+        } catch (SubscriptionNotFound exception) {
+            return ResponseEntity.notFound().build();
         }
     }
 
