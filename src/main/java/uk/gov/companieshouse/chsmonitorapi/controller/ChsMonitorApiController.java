@@ -13,6 +13,7 @@ import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.PagedModel;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ProblemDetail;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,13 +50,12 @@ public class ChsMonitorApiController {
 
         try {
             Page<SubscriptionDocument> subscriptions = subscriptionService.getSubscriptions(
-                    request.getHeader(ERIC_IDENTITY), getEricPassthroughHeader(request), pageable);
+                    request.getHeader(ERIC_IDENTITY), pageable);
             HttpHeaders headers = new HttpHeaders();
             headers.add("X-Page-Number", String.valueOf(pageable.getPageNumber()));
             headers.add("X-Page-Size", String.valueOf(pageable.getPageSize()));
 
             PagedModel<EntityModel<SubscriptionDocument>> body = assembler.toModel(subscriptions);
-
             return ResponseEntity.ok().headers(headers).body(body);
         } catch (ArrayIndexOutOfBoundsException exception) {
             return ResponseEntity.status(HttpStatus.REQUESTED_RANGE_NOT_SATISFIABLE).build();
@@ -69,8 +69,7 @@ public class ChsMonitorApiController {
             @PathVariable String companyNumber) {
         try {
             SubscriptionDocument subscription = subscriptionService.getSubscription(
-                    request.getHeader(ERIC_IDENTITY), companyNumber,
-                    getEricPassthroughHeader(request));
+                    request.getHeader(ERIC_IDENTITY), companyNumber);
             return ResponseEntity.ok(subscription);
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
@@ -99,9 +98,5 @@ public class ChsMonitorApiController {
         } catch (ServiceException exception) {
             return ResponseEntity.internalServerError().build();
         }
-    }
-
-    private String getEricPassthroughHeader(HttpServletRequest request) {
-        return request.getHeader(ApiSdkManager.getEricPassthroughTokenHeader());
     }
 }

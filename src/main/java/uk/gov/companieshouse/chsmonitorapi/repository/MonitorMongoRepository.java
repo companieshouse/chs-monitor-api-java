@@ -17,6 +17,9 @@ public interface MonitorMongoRepository extends MongoRepository<SubscriptionDocu
     Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumberAndActiveIsFalse(
             String userId, String companyNumber);
 
+    Optional<SubscriptionDocument> findSubscriptionByUserIdAndCompanyNumber(String userId,
+            String companyNumber);
+
     Page<SubscriptionDocument> findSubscriptionsByUserIdAndActiveIsTrue(String userId,
             Pageable pageable);
 

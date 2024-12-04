@@ -17,8 +17,7 @@ public interface SubscriptionService {
      * @param pageable the pageable
      * @return the subscriptions
      */
-    Page<SubscriptionDocument> getSubscriptions(String userId,
-            String passthroughHeader, Pageable pageable);
+    Page<SubscriptionDocument> getSubscriptions(String userId, Pageable pageable);
 
     /**
      * Gets subscription.
@@ -28,8 +27,7 @@ public interface SubscriptionService {
      * @return the subscription
      * @throws ServiceException the service exception
      */
-    SubscriptionDocument getSubscription(String userId, String companyNumber,
-            String passthroughHeader) throws ServiceException;
+    SubscriptionDocument getSubscription(String userId, String companyNumber) throws ServiceException;
 
     /**
      * Create subscription.

@@ -3,7 +3,6 @@ package uk.gov.companieshouse.chsmonitorapi.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -45,7 +44,6 @@ import uk.gov.companieshouse.chsmonitorapi.model.SubscriptionDocument;
 import uk.gov.companieshouse.chsmonitorapi.security.SecurityConfig;
 import uk.gov.companieshouse.chsmonitorapi.service.SubscriptionService;
 import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.sdk.manager.ApiSdkManager;
 
 @WebMvcTest(ChsMonitorApiController.class)
 @AutoConfigureMockMvc
@@ -60,7 +58,6 @@ class ChsMonitorApiControllerTest {
     private final String COMPANY_NAME = "12345678";
     private final String COMPANY_NUMBER = "TEST_COMPANY";
     private final String USER_ID = "TEST_USER";
-    private final String ERIC_PASSTHROUGH = "ERIC_PASSTHROUGH_TOKEN";
     private final String ERIC_IDENTITY = "ERIC-Identity";
     private final String ERIC_IDENTITY_TYPE = "ERIC-Identity-Type";
     private final String ERIC_IDENTITY_TYPE_VALUE = "key";
@@ -142,40 +139,37 @@ class ChsMonitorApiControllerTest {
 
     @Test
     void shouldReturnListOfSubscriptions() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
-                any(Pageable.class))).thenReturn(SUBSCRIPTIONS);
+        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenReturn(
+                SUBSCRIPTIONS);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("number", 0)
                 .queryParam("size", 10).encode().toUriString();
-        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE_PAGED));
     }
 
     @Test
     void shouldReturnStatus416() throws Exception {
-        when(subscriptionService.getSubscriptions(anyString(), eq(ERIC_PASSTHROUGH),
-                any(Pageable.class))).thenThrow(new ArrayIndexOutOfBoundsException());
+        when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenThrow(
+                new ArrayIndexOutOfBoundsException());
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("size", Integer.MAX_VALUE - 10).queryParam("number", 10).encode()
                 .toUriString();
-        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
     }
 
     @Test
     void shouldReturnSubscription() throws Exception {
-        when(subscriptionService.getSubscription(anyString(), anyString(),
-                eq(ERIC_PASSTHROUGH))).thenReturn(ACTIVE_SUBSCRIPTION);
+        when(subscriptionService.getSubscription(anyString(), anyString())).thenReturn(
+                ACTIVE_SUBSCRIPTION);
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
-        mockMvc.perform(get(template).header(ApiSdkManager.getEricPassthroughTokenHeader(),
-                                ERIC_PASSTHROUGH).header(ERIC_IDENTITY, ERIC_IDENTITY)
+        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
                         .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
                 .andExpect(status().isOk()).andExpect(content().json(EXPECTED_RESPONSE));
     }
@@ -191,16 +185,15 @@ class ChsMonitorApiControllerTest {
                 .content(objectMapper.writeValueAsString(deletePayload))
                 .contentType(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
 
-        when(subscriptionService.getSubscription(anyString(), anyString(),
-                eq(ERIC_PASSTHROUGH))).thenThrow(new ServiceException("Not found"));
+        when(subscriptionService.getSubscription(anyString(), anyString())).thenThrow(
+                new ServiceException("Not found"));
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
 
         mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                        .header(ApiSdkManager.getEricPassthroughTokenHeader(), ERIC_PASSTHROUGH))
-                .andDo(print()).andExpect(status().isInternalServerError());
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -212,8 +205,8 @@ class ChsMonitorApiControllerTest {
                 .deleteSubscription(anyString(), anyString());
 
         mockMvc.perform(delete("http://localhost/following").with(csrf())
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY).header(ERIC_IDENTITY_TYPE,
-                                ERIC_IDENTITY_TYPE_VALUE)
+                        .header(ERIC_IDENTITY, ERIC_IDENTITY)
+                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
                         .content(objectMapper.writeValueAsString(deletePayload))
                         .contentType(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isInternalServerError());
