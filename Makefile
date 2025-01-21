@@ -1,4 +1,4 @@
-artifact_name       := company-lookup.web.ch.gov.uk
+artifact_name       := chs-monitor-api
 version             := unversioned
 
 dependency_check_base_suppressions:=common_suppressions_spring_6.xml
