@@ -33,7 +33,7 @@ dependency-check:
 	suppressions_path="$${suppressions_home}/suppressions/$(dependency_check_base_suppressions)"; \
 	if [  -f "$${suppressions_path}" ]; then \
 		cp -av "$${suppressions_path}" $(suppressions_file); \
-		mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=$(dependency_check_minimum_cvss) -DassemblyAnalyzerEnabled=$(dependency_check_assembly_analyzer_enabled) -DsuppressionFiles=$(suppressions_file) -DnvdApiKey="68fa3aae-9b13-44a8-8f67-74fd41911fd3"; \
+		mvn org.owasp:dependency-check-maven:check -DfailBuildOnCVSS=$(dependency_check_minimum_cvss) -DassemblyAnalyzerEnabled=$(dependency_check_assembly_analyzer_enabled) -DsuppressionFiles=$(suppressions_file); \
 	else \
 		printf -- "\n ERROR Cannot find suppressions file at '%s'\n" "$${suppressions_path}" >&2; \
 		exit 1; \
