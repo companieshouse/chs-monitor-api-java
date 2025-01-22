@@ -27,7 +27,8 @@ public interface SubscriptionService {
      * @return the subscription
      * @throws ServiceException the service exception
      */
-    SubscriptionDocument getSubscription(String userId, String companyNumber) throws ServiceException;
+    SubscriptionDocument getSubscription(String userId, String companyNumber)
+            throws ServiceException;
 
     /**
      * Create subscription.

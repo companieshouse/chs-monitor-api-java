@@ -7,15 +7,15 @@ import javax.validation.constraints.NotNull;
  */
 public class InputSubscription {
 
+    @NotNull
+    private String companyNumber;
+
     public InputSubscription() {
     }
 
     public InputSubscription(String companyNumber) {
         this.companyNumber = companyNumber;
     }
-
-    @NotNull
-    private String companyNumber;
 
     /**
      * Gets company number.

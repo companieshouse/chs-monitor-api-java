@@ -2,18 +2,13 @@ package uk.gov.companieshouse.chsmonitorapi.config;
 
 import static uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication.APPLICATION_NAME_SPACE;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import uk.gov.companieshouse.chsmonitorapi.logging.RequestLogInterceptor;
-import uk.gov.companieshouse.chsmonitorapi.interceptor.AuthenticationInterceptor;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
 
 @Configuration
-public class LoggingConfig  {
+public class LoggingConfig {
 
     @Bean
     public Logger getLogger() {

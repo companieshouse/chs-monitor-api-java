@@ -3,8 +3,6 @@ package uk.gov.companieshouse.chsmonitorapi.logging;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 import uk.gov.companieshouse.logging.Logger;
@@ -31,7 +29,7 @@ public class RequestLogInterceptor implements HandlerInterceptor, RequestLogger 
             ModelAndView modelAndView) throws Exception {
         logEndRequestProcessing(request, response, logger);
         // Without this debug call the endrequestprocessing isn't called until a new request
-        // comes in. god knows why
+        // comes in.
         logger.trace("Calling super postHandle");
         HandlerInterceptor.super.postHandle(request, response, handler, modelAndView);
     }

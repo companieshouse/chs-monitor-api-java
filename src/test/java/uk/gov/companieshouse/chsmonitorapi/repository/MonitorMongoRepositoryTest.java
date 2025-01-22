@@ -2,7 +2,6 @@ package uk.gov.companieshouse.chsmonitorapi.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -34,6 +33,11 @@ class MonitorMongoRepositoryTest {
     public static final String INVALID_COMPANY_NUMBER = "1234";
     @Container
     private static final MongoDBContainer mongoDBContainer = new MongoDBContainer("mongo:6.0");
+    private static final int PAGE_REQUEST_NUMBER = 0;
+    private static final int PAGE_REQUEST_SIZE = 2;
+    private static final int EXPECTED_TOTAL_PAGES = 6;
+    private static final int EXPECTED_TOTAL_ELEMENTS = 11;
+    private static final int EXPECTED_PAGE_COUNT = 2;
     @Autowired
     private MonitorMongoRepository monitorMongoRepository;
     private SubscriptionDocument document;
@@ -81,31 +85,35 @@ class MonitorMongoRepositoryTest {
                     "CompanyName" + i, "", true, LocalDateTime.now(), LocalDateTime.now()));
         }
         monitorMongoRepository.insert(docs);
-        PageRequest pageRequest = PageRequest.of(0, 2);
-        Page<SubscriptionDocument> documentPage = monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
+        PageRequest pageRequest = PageRequest.of(PAGE_REQUEST_NUMBER, PAGE_REQUEST_SIZE);
+        Page<SubscriptionDocument> documentPage =
+                monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
                 USER_ID, pageRequest);
 
-        assertEquals(6, documentPage.getTotalPages());
-        assertEquals(11, documentPage.getTotalElements());
-        assertEquals(2, documentPage.stream().count());
+        assertEquals(EXPECTED_TOTAL_PAGES, documentPage.getTotalPages());
+        assertEquals(EXPECTED_TOTAL_ELEMENTS, documentPage.getTotalElements());
+        assertEquals(EXPECTED_PAGE_COUNT, documentPage.stream().count());
 
-        List<String> firstCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+        List<String> firstCompanyNumbers = List.of(
+                documentPage.toList().getFirst().getCompanyNumber(),
                 documentPage.toList().getLast().getCompanyNumber());
-        List<String> secondCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+        List<String> secondCompanyNumbers = List.of(
+                documentPage.toList().getFirst().getCompanyNumber(),
                 documentPage.toList().getLast().getCompanyNumber());
         assertNotEquals(documentPage.toList().getFirst().getCompanyNumber(),
                 documentPage.toList().getLast().getCompanyNumber());
 
-        documentPage = monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(
-                USER_ID, pageRequest.next());
+        documentPage = monitorMongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(USER_ID,
+                pageRequest.next());
 
-        List<String> thirdCompanyNumbers = List.of(documentPage.toList().getFirst().getCompanyNumber(),
+        List<String> thirdCompanyNumbers = List.of(
+                documentPage.toList().getFirst().getCompanyNumber(),
                 documentPage.toList().getLast().getCompanyNumber());
 
         assertTrue(firstCompanyNumbers.containsAll(secondCompanyNumbers));
         assertFalse(firstCompanyNumbers.containsAll(thirdCompanyNumbers));
         assertFalse(documentPage.isFirst());
-        assertEquals(2, documentPage.stream().count());
+        assertEquals(EXPECTED_PAGE_COUNT, documentPage.stream().count());
     }
 
     private @NotNull SubscriptionDocument getSubscriptionDocument() {

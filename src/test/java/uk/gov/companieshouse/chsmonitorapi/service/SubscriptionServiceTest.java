@@ -82,11 +82,10 @@ class SubscriptionServiceTest {
     @Test
     void shouldReturnSinglePageOfSubscriptionDocuments() throws ServiceException {
 
-        SubscriptionDocument subDoc = new SubscriptionDocument(USER_ID,
-                COMPANY_NUMBER, COMPANY_NAME, QUERY, ACTIVE, NOW, NOW.minus(Period.ofDays(1)));
+        SubscriptionDocument subDoc = new SubscriptionDocument(USER_ID, COMPANY_NUMBER,
+                COMPANY_NAME, QUERY, ACTIVE, NOW, NOW.minus(Period.ofDays(1)));
 
-        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(
-                List.of(subDoc));
+        Page<SubscriptionDocument> subscriptionDocumentPage = new PageImpl<>(List.of(subDoc));
         when(mongoRepository.findSubscriptionsByUserIdAndActiveIsTrue(anyString(),
                 any(Pageable.class))).thenReturn(subscriptionDocumentPage);
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(companyProfileApi);
@@ -146,8 +145,7 @@ class SubscriptionServiceTest {
                 anyString())).thenReturn(Optional.of(subscriptionDocument));
         when(companyProfileService.getCompanyDetails(anyString())).thenReturn(companyProfileApi);
 
-        SubscriptionDocument subDoc = subscriptionService.getSubscription(USER_ID,
-                COMPANY_NUMBER);
+        SubscriptionDocument subDoc = subscriptionService.getSubscription(USER_ID, COMPANY_NUMBER);
 
         assertTrue(subDoc.isActive());
         assertEquals(COMPANY_NUMBER, subDoc.getCompanyNumber());

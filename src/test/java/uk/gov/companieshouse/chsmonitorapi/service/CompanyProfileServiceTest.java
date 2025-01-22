@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.IOException;
@@ -16,7 +15,6 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.annotation.Import;
 import uk.gov.companieshouse.api.InternalApiClient;
-import uk.gov.companieshouse.api.error.ApiErrorResponseException;
 import uk.gov.companieshouse.api.handler.company.CompanyResourceHandler;
 import uk.gov.companieshouse.api.handler.company.request.CompanyGet;
 import uk.gov.companieshouse.api.handler.exception.URIValidationException;
@@ -75,7 +73,8 @@ class CompanyProfileServiceTest {
     }
 
     @Test
-    void testGetCompanyDetails_ApiErrorResponseException() throws IOException, URIValidationException {
+    void testGetCompanyDetails_ApiErrorResponseException()
+            throws IOException, URIValidationException {
         when(apiClientService.getApiClient()).thenReturn(internalApiClient);
         when(internalApiClient.company()).thenReturn(companyResourceHandler);
         when(internalApiClient.company().get(anyString())).thenReturn(companyGet);

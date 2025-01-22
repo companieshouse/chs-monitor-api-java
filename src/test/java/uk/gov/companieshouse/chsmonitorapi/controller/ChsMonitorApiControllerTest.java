@@ -54,24 +54,24 @@ import uk.gov.companieshouse.logging.Logger;
         SecurityConfig.class})
 class ChsMonitorApiControllerTest {
 
-    private final String TEST_COMPANY_NUMBER = "1777777";
-    private final String TEST_ID = "TEST_ID";
-    private final String COMPANY_NAME = "12345678";
-    private final String COMPANY_NUMBER = "TEST_COMPANY";
-    private final String USER_ID = "TEST_USER";
-    private final String ERIC_IDENTITY = "ERIC-Identity";
-    private final String ERIC_IDENTITY_TYPE = "ERIC-Identity-Type";
-    private final String ERIC_IDENTITY_TYPE_VALUE = "key";
-    // If you run this at exactly HH:MM:00 it cuts off the seconds and fails lol
-    private final LocalDateTime NOW = LocalDateTime.now().truncatedTo(ChronoUnit.SECONDS);
-    private final SubscriptionDocument ACTIVE_SUBSCRIPTION = new SubscriptionDocument();
-    private final LocalDateTime CREATED = NOW.minus(Period.ofDays(1))
+    private final String testCompanyNumber = "1777777";
+    private final String testId = "TEST_ID";
+    private final String companyName = "12345678";
+    private final String companyNumber = "TEST_COMPANY";
+    private final String userId = "TEST_USER";
+    private final String ericIdentity = "ERIC-Identity";
+    private final String ericIdentityType = "ERIC-Identity-Type";
+    private final String ericIdentityTypeValue = "key";
+    private final LocalDateTime now = LocalDateTime.of(2025, 1, 22, 16, 28, 30)
             .truncatedTo(ChronoUnit.SECONDS);
-    private final boolean ACTIVE = true;
-    private SubscriptionDocument INACTIVE_SUBSCRIPTION = new SubscriptionDocument();
-    private Page<SubscriptionDocument> SUBSCRIPTIONS;
-    private String EXPECTED_RESPONSE_PAGED;
-    private String EXPECTED_RESPONSE;
+    private final SubscriptionDocument activeSubscription = new SubscriptionDocument();
+    private final LocalDateTime created = now.minus(Period.ofDays(1))
+            .truncatedTo(ChronoUnit.SECONDS);
+    private final boolean active = true;
+    private SubscriptionDocument inactiveSubscription = new SubscriptionDocument();
+    private Page<SubscriptionDocument> subscriptions;
+    private String expectedResponsePaged;
+    private String expectedResponse;
 
     @Autowired
     private Logger logger;
@@ -88,34 +88,22 @@ class ChsMonitorApiControllerTest {
         assertThat(mockMvc).isNotNull();
     }
 
-    @Test
-    @WithAnonymousUser
-    void shouldBlockUnauthorizedCalls() throws Exception {
-        mockMvc.perform(get("/")).andDo(print()).andExpect(status().isUnauthorized());
-        mockMvc.perform(get("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                .andExpect(status().isUnauthorized());
-        mockMvc.perform(post("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                .andExpect(status().isUnauthorized());
-        mockMvc.perform(delete("/" + TEST_COMPANY_NUMBER)).andDo(print())
-                .andExpect(status().isUnauthorized());
-    }
-
     @BeforeEach
     void beforeEach() {
-        ACTIVE_SUBSCRIPTION.setId(TEST_ID);
-        ACTIVE_SUBSCRIPTION.setActive(ACTIVE);
-        ACTIVE_SUBSCRIPTION.setCreated(NOW);
-        ACTIVE_SUBSCRIPTION.setCompanyName(COMPANY_NAME);
-        ACTIVE_SUBSCRIPTION.setCompanyNumber(COMPANY_NUMBER);
-        ACTIVE_SUBSCRIPTION.setUserId(USER_ID);
-        ACTIVE_SUBSCRIPTION.setCreated(CREATED);
-        SUBSCRIPTIONS = new PageImpl<>(
-                List.of(ACTIVE_SUBSCRIPTION, ACTIVE_SUBSCRIPTION, ACTIVE_SUBSCRIPTION));
+        activeSubscription.setId(testId);
+        activeSubscription.setActive(active);
+        activeSubscription.setCreated(now);
+        activeSubscription.setCompanyName(companyName);
+        activeSubscription.setCompanyNumber(companyNumber);
+        activeSubscription.setUserId(userId);
+        activeSubscription.setCreated(created);
+        subscriptions = new PageImpl<>(
+                List.of(activeSubscription, activeSubscription, activeSubscription));
 
-        INACTIVE_SUBSCRIPTION = new SubscriptionDocument(ACTIVE_SUBSCRIPTION);
-        INACTIVE_SUBSCRIPTION.setActive(false);
+        inactiveSubscription = new SubscriptionDocument(activeSubscription);
+        inactiveSubscription.setActive(false);
 
-        EXPECTED_RESPONSE = """
+        expectedResponse = """
                 {"id":"%s",
                 "userId":"%s",
                 "companyNumber":"%s",
@@ -124,9 +112,9 @@ class ChsMonitorApiControllerTest {
                 "active":%s,
                 "created":"%s",
                 "updated":null}
-                """.formatted(TEST_ID, USER_ID, COMPANY_NUMBER, COMPANY_NAME, ACTIVE, CREATED);
+                """.formatted(testId, userId, companyNumber, companyName, active, created);
 
-        EXPECTED_RESPONSE_PAGED = """
+        expectedResponsePaged = """
                 {"_embedded":{"subscriptionDocumentList":
                 [
                 %s,
@@ -135,19 +123,31 @@ class ChsMonitorApiControllerTest {
                 ]},
                 "_links":{"self":{"href":"http://localhost/following?companyNumber=1777777&number=0&size=10"}},
                 "page":{"size":3,"totalElements":3,"totalPages":1,"number":0}}
-                """.formatted(EXPECTED_RESPONSE, EXPECTED_RESPONSE, EXPECTED_RESPONSE);
+                """.formatted(expectedResponse, expectedResponse, expectedResponse);
+    }
+
+    @Test
+    @WithAnonymousUser
+    void shouldBlockUnauthorizedCalls() throws Exception {
+        mockMvc.perform(get("/")).andDo(print()).andExpect(status().isUnauthorized());
+        mockMvc.perform(get("/" + testCompanyNumber)).andDo(print())
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(post("/" + testCompanyNumber)).andDo(print())
+                .andExpect(status().isUnauthorized());
+        mockMvc.perform(delete("/" + testCompanyNumber)).andDo(print())
+                .andExpect(status().isUnauthorized());
     }
 
     @Test
     void shouldReturnListOfSubscriptions() throws Exception {
         when(subscriptionService.getSubscriptions(anyString(), any(Pageable.class))).thenReturn(
-                SUBSCRIPTIONS);
+                subscriptions);
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
-                .queryParam("companyNumber", TEST_COMPANY_NUMBER).queryParam("number", 0)
+                .queryParam("companyNumber", testCompanyNumber).queryParam("number", 0)
                 .queryParam("size", 10).encode().toUriString();
-        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
-                .andExpectAll(status().isOk(), content().json(EXPECTED_RESPONSE_PAGED));
+        mockMvc.perform(get(template).header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue)).andDo(print())
+                .andExpectAll(status().isOk(), content().json(expectedResponsePaged));
     }
 
     @Test
@@ -158,8 +158,8 @@ class ChsMonitorApiControllerTest {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following")
                 .queryParam("size", Integer.MAX_VALUE - 10).queryParam("number", 10).encode()
                 .toUriString();
-        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+        mockMvc.perform(get(template).header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue)).andDo(print())
                 .andExpect(status().isRequestedRangeNotSatisfiable());
     }
 
@@ -168,23 +168,23 @@ class ChsMonitorApiControllerTest {
         when(subscriptionService.getSubscription(anyString(), anyString())).thenThrow(
                 new SubscriptionNotFound("companyName", "userId"));
 
-        String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/companyNumber")
-                .toUriString();
-        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+        String template = UriComponentsBuilder.fromHttpUrl(
+                "http://localhost/following/companyNumber").toUriString();
+        mockMvc.perform(get(template).header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue)).andDo(print())
                 .andExpect(status().isNotFound());
     }
 
     @Test
     void shouldReturnSubscription() throws Exception {
         when(subscriptionService.getSubscription(anyString(), anyString())).thenReturn(
-                ACTIVE_SUBSCRIPTION);
+                activeSubscription);
 
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
-        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
-                .andExpect(status().isOk()).andExpect(content().json(EXPECTED_RESPONSE));
+        mockMvc.perform(get(template).header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue)).andDo(print())
+                .andExpect(status().isOk()).andExpect(content().json(expectedResponse));
     }
 
     @Test
@@ -192,11 +192,13 @@ class ChsMonitorApiControllerTest {
         InputSubscription deletePayload = new InputSubscription("1777777");
         ObjectMapper objectMapper = new ObjectMapper();
 
-        mockMvc.perform(delete("http://localhost/following").with(csrf())
-                .header(ERIC_IDENTITY, ERIC_IDENTITY)
-                .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                .content(objectMapper.writeValueAsString(deletePayload))
-                .contentType(MediaType.APPLICATION_JSON)).andDo(print()).andExpect(status().isOk());
+        mockMvc.perform(
+                        delete("http://localhost/following").with(csrf()).header(ericIdentity,
+                                        ericIdentity)
+                                .header(ericIdentityType, ericIdentityTypeValue)
+                                .content(objectMapper.writeValueAsString(deletePayload))
+                                .contentType(MediaType.APPLICATION_JSON)).andDo(print())
+                .andExpect(status().isOk());
 
         when(subscriptionService.getSubscription(anyString(), anyString())).thenThrow(
                 new ServiceException("Not found"));
@@ -204,8 +206,8 @@ class ChsMonitorApiControllerTest {
         String template = UriComponentsBuilder.fromHttpUrl("http://localhost/following/1777777")
                 .encode().toUriString();
 
-        mockMvc.perform(get(template).header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)).andDo(print())
+        mockMvc.perform(get(template).header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue)).andDo(print())
                 .andExpect(status().isInternalServerError());
     }
 
@@ -217,11 +219,12 @@ class ChsMonitorApiControllerTest {
         doThrow(new ServiceException("Service exception")).when(subscriptionService)
                 .deleteSubscription(anyString(), anyString());
 
-        mockMvc.perform(delete("http://localhost/following").with(csrf())
-                        .header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE)
-                        .content(objectMapper.writeValueAsString(deletePayload))
-                        .contentType(MediaType.APPLICATION_JSON)).andDo(print())
+        mockMvc.perform(
+                        delete("http://localhost/following").with(csrf()).header(ericIdentity,
+                                        ericIdentity)
+                                .header(ericIdentityType, ericIdentityTypeValue)
+                                .content(objectMapper.writeValueAsString(deletePayload))
+                                .contentType(MediaType.APPLICATION_JSON)).andDo(print())
                 .andExpect(status().isInternalServerError());
 
     }
@@ -230,8 +233,8 @@ class ChsMonitorApiControllerTest {
     void shouldCreateSubscription() throws Exception {
         InputSubscription createPayload = new InputSubscription("1777777");
         ObjectMapper objectMapper = new ObjectMapper();
-        mockMvc.perform(post("http://localhost/following").header(ERIC_IDENTITY, ERIC_IDENTITY)
-                        .header(ERIC_IDENTITY_TYPE, ERIC_IDENTITY_TYPE_VALUE).with(csrf())
+        mockMvc.perform(post("http://localhost/following").header(ericIdentity, ericIdentity)
+                        .header(ericIdentityType, ericIdentityTypeValue).with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createPayload)))
                 .andExpect(status().isOk());

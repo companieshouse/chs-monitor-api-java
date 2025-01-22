@@ -34,7 +34,8 @@ public class AuthenticationInterceptor implements HandlerInterceptor {
             return false;
         }
 
-        logger.debugRequest(request, "User authenticated", new DataMap.Builder().build().getLogMap());
+        logger.debugRequest(request, "User authenticated",
+                new DataMap.Builder().build().getLogMap());
         return true;
     }
 

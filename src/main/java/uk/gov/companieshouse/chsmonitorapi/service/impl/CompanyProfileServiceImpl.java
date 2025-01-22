@@ -30,7 +30,8 @@ public class CompanyProfileServiceImpl implements CompanyProfileService {
         var uri = GET_COMPANY_DETAILS_URI.expand(companyNumber).toString();
 
         try {
-            CompanyProfileApi companyProfileApi = apiClientService.getApiClient().company().get(uri).execute().getData();
+            CompanyProfileApi companyProfileApi = apiClientService.getApiClient().company().get(uri)
+                    .execute().getData();
 
             if (companyProfileApi == null) {
                 logger.error("Company details not found for company number: " + companyNumber);
