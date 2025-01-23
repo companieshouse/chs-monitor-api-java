@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>uk.gov.companieshouse</groupId>
+    <artifactId>companies-house-parent</artifactId>
+    <version>2.1.11</version> <!-- lookup parent from repository -->
+  </parent>
+
+  <artifactId>chs-monitor-api</artifactId>
+  <version>unversioned</version>
+  <name>chs-monitor-api</name>
+  <description>Part of Monitor/Follow system. API to handle follow/unfollow requests.</description>
+
+  <properties>
+    <java.version>21</java.version>
+
+    <!-- Spring -->
+    <spring-boot-dependencies.version>3.4.1</spring-boot-dependencies.version>
+
+    <!-- External -->
+    <testcontainers.version>1.20.3</testcontainers.version>
+
+    <!-- Internal -->
+    <structured-logging.version>3.0.20</structured-logging.version>
+    <api-sdk-java.version>6.0.21</api-sdk-java.version>
+    <private-api-sdk-java.version>4.0.235</private-api-sdk-java.version>
+    <api-sdk-manager-java-library.version>3.0.6</api-sdk-manager-java-library.version>
+    <web-security-java.version>3.1.0</web-security-java.version>
+    <java-session-handler.version>4.1.3</java-session-handler.version>
+
+    <!-- Plugin -->
+    <spring-boot-maven-plugin.version>3.4.1</spring-boot-maven-plugin.version>
+    <jib-maven-plugin.version>3.4.4</jib-maven-plugin.version>
+    <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
+    <maven-surefire-plugin.version>3.5.1</maven-surefire-plugin.version>
+
+    <!-- Sonar -->
+    <sonar-maven-plugin.version>3.11.0.3922</sonar-maven-plugin.version>
+    <sonar.verbose>true</sonar.verbose>
+    <sonar.projectKey>uk.gov.companieshouse:chs-monitor-api</sonar.projectKey>
+    <sonar.jacoco.reportPath>target/site/jacoco/jacoco.xml</sonar.jacoco.reportPath>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-dependencies</artifactId>
+        <version>${spring-boot-dependencies.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Springboot -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-actuator</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-data-mongodb</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-web</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-logging</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-hateoas</artifactId>
+    </dependency>
+
+    <!-- Internal -->
+    <dependency>
+      <groupId>uk.gov.companieshouse</groupId>
+      <artifactId>structured-logging</artifactId>
+      <version>${structured-logging.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>uk.gov.companieshouse</groupId>
+        <artifactId>api-sdk-java</artifactId>
+        <version>${api-sdk-java.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>uk.gov.companieshouse</groupId>
+        <artifactId>private-api-sdk-java</artifactId>
+        <version>${private-api-sdk-java.version}</version>
+    </dependency>
+    <dependency>
+        <groupId>uk.gov.companieshouse</groupId>
+        <artifactId>api-sdk-manager-java-library</artifactId>
+        <version>${api-sdk-manager-java-library.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.gov.companieshouse</groupId>
+      <artifactId>web-security-java</artifactId>
+      <version>${web-security-java.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>uk.gov.companieshouse</groupId>
+      <artifactId>java-session-handler</artifactId>
+      <version>${java-session-handler.version}</version>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.testcontainers</groupId>
+      <artifactId>mongodb</artifactId>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot-maven-plugin.version}</version>
+        <configuration>
+          <mainClass>uk.gov.companieshouse.chsmonitorapi.ChsMonitorApiApplication
+          </mainClass>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>repackage</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>${maven-compiler-plugin.version}</version>
+        <configuration>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
+          <encoding>${project.build.sourceEncoding}</encoding>
+          <compilerArgs>
+            <arg>-parameters</arg>
+          </compilerArgs>
+        </configuration>
+      </plugin>
+
+      <plugin>
+        <groupId>com.google.cloud.tools</groupId>
+        <artifactId>jib-maven-plugin</artifactId>
+        <version>${jib-maven-plugin.version}</version>
+        <configuration>
+          <container>
+            <expandClasspathDependencies>true</expandClasspathDependencies>
+          </container>
+          <from>
+            <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/ci-corretto-build-21:latest</image>
+          </from>
+          <to>
+            <image>416670754337.dkr.ecr.eu-west-2.amazonaws.com/chs-monitor-api:latest</image>
+          </to>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>${maven-surefire-plugin.version}</version>
+      </plugin>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco-maven-plugin.version}</version>
+        <executions>
+          <execution>
+            <id>pre-integration-test</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>prepare-agent</goal>
+            </goals>
+            <configuration>
+              <!-- Sets the path to the file which contains the execution data. -->
+              <destFile>${sonar.jacoco.reports}/jacoco-it.exec</destFile>
+              <propertyName>failsafeArgLine</propertyName>
+            </configuration>
+          </execution>
+          <execution>
+            <id>post-integration-test</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>report</goal>
+            </goals>
+            <configuration>
+              <!-- Sets the path to the file which contains the execution data. -->
+              <dataFile>${sonar.jacoco.reports}/jacoco-it.exec</dataFile>
+              <!-- Sets the output directory for the code coverage report. -->
+              <outputDirectory>${sonar.jacoco.reports}/jacoco-it</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>
